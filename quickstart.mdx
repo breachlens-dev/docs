@@ -1,47 +1,111 @@
 ---
 title: "Quickstart"
-description: "Begin with a guide on the fastest path to a successful outcome"
+description: "From `docker compose up` to a working scan in under 10 minutes."
 ---
 
-Describe how someone begins using your product. What is the first thing they need to do? Are there any prerequisites?
+This walks you through getting BreachLens running on your own machine, connecting your first GitHub repository, and seeing scan findings show up in the dashboard.
 
-A quickstart should take someone from zero to using your product. They'll get a quick win and a sense of what they can accomplish.
+<Tip>
+  Want to see it running first without installing? The live demo at [aurora.breachlens.dev](https://aurora.breachlens.dev) has DVWA and WebGoat pre-connected. Sign in with GitHub and explore.
+</Tip>
 
 ## Prerequisites
 
 Before you begin, you must have:
 
-- Requirement one (for example, Node.js 18+, a free account, an API key)
-- Requirement two (for example, a compatible device, a compatible browser, a compatible operating system)
+- **Docker** 24.0+ and **Docker Compose** v2
+- **8 GB RAM** minimum (16 GB recommended for the pentest scanner tier)
+- **30 GB** free disk space
+- Ports **5173** (web) and **3000** (api) free on your host
+- A **license JWT** from [hi@breachlens.app](mailto:hi@breachlens.app?subject=BreachLens%20license%20request) (free for 30-day trial)
 
-## Get started
+## Install
 
 <Steps>
-  <Step title="Install">
-    Describe how to install your product or sign up.
+  <Step title="Get your license">
+    Email [hi@breachlens.app](mailto:hi@breachlens.app?subject=BreachLens%20license%20request) with your company name and intended deployment. You'll receive a license JWT and the signed EULA within one business day.
+  </Step>
+
+  <Step title="Pull the install bundle">
+    BreachLens ships as a single tarball with `docker-compose.yml` + scanner images. Download from the link in your license email.
 
     ```bash
-    npm install your-package
+    tar xzf breachlens-2026.06.tar.gz
+    cd breachlens
     ```
   </Step>
-  <Step title="Configure">
-    Describe any setup or configuration needed before first use.
+
+  <Step title="Set your license">
+    Paste the license JWT into `.env`:
 
     ```bash
-    your-cli init
+    cp .env.example .env
+    echo "LICENSE_JWT=eyJhbGciOiJSUzI1NiIs..." >> .env
+    ```
+
+    <Note>
+      The license is verified at api startup. Tampering with it (or running without one) prevents the api from booting. See [License enforcement](/security/license) for the runtime check.
+    </Note>
+  </Step>
+
+  <Step title="Bring up the stack">
+    ```bash
+    docker compose up -d
+    ```
+
+    First boot takes ~3 minutes (image pulls + Prisma migrate + scanner warm-up). Watch the logs until the api healthcheck flips to `healthy`:
+
+    ```bash
+    docker compose logs -f api
     ```
   </Step>
-  <Step title="Run it">
-    Show the first thing a user does to see it working.
 
-    ```bash
-    your-cli start
-    ```
+  <Step title="Open the web UI">
+    Visit [https://localhost:5173](https://localhost:5173). You'll see the first-login wizard. Accept the self-signed cert warning — BreachLens uses an internal CA in dev mode.
+
+    Sign in with GitHub, then accept the auto-created PERSONAL organization.
   </Step>
 </Steps>
 
-<Tip>
-  Give people a way to get help. This could be a link to a support page, a chat with a customer support agent, or a forum for your product.
+## Run your first scan
 
-  Example: Need help? Reach out to us at [support@yourcompany.com](mailto:support@yourcompany.com).
+<Steps>
+  <Step title="Install the BreachLens GitHub App">
+    From the onboarding wizard, click **Connect GitHub**. You'll be redirected to install the BreachLens GitHub App on your org or personal account.
+
+    Pick the repos you want to scan. The minimum scopes are read-only on contents and metadata.
+  </Step>
+
+  <Step title="Trigger a scan">
+    Back in the BreachLens dashboard, navigate to **Repositories**, pick a connected repo, and click **Run scan** in the top-right.
+
+    The default scan tier runs **SAST + SCA + Secrets + IaC** in parallel. Expect findings within 30–90 seconds for a typical repo.
+  </Step>
+
+  <Step title="Triage findings">
+    Navigate to **Findings**. Filter by **Severity: Critical, High** and **Has attack path: yes** to see what actually matters.
+
+    Click any finding row to open the detail drawer — you'll see the AI-suggested fix, reachability tier, attack-path context, and a one-click **Generate auto-fix PR** button.
+  </Step>
+</Steps>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Add a domain target" icon="globe" href="/scanning/domains">
+    Run DAST + autonomous pentest against a live web app. Capture proof-of-exploit videos.
+  </Card>
+  <Card title="Configure SSO" icon="key" href="/auth/sso">
+    Wire Microsoft Entra ID, Okta, Auth0, Google Workspace, or Keycloak. Multi-IdP per org supported.
+  </Card>
+  <Card title="Bring your own AI" icon="sparkles" href="/ai/providers">
+    Plug Anthropic, OpenAI, Gemini, or Ollama for auto-fix and finding summarization.
+  </Card>
+  <Card title="Air-gap installation" icon="shield-halved" href="/deployment/airgap">
+    Run BreachLens fully offline. Sync vulnerability databases via signed tarballs over the egress verification pack.
+  </Card>
+</CardGroup>
+
+<Tip>
+  Stuck? Reach out at [hi@breachlens.app](mailto:hi@breachlens.app) — every license customer gets a dedicated Slack channel during onboarding.
 </Tip>

@@ -1,17 +1,18 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Mintlify Starter Kit",
+  "name": "BreachLens",
+  "description": "Self-hosted DevSecOps — 7 scanner tiers, multi-AI auto-fix, cross-tier attack-path correlation, air-gappable for federal.",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#4F46E5",
+    "light": "#6366F1",
+    "dark": "#4338CA"
   },
   "favicon": "/favicon.svg",
   "navigation": {
     "pages": [
       {
-        "group": "Getting Started",
+        "group": "Getting started",
         "pages": [
           "index",
           "quickstart"
@@ -21,14 +22,14 @@
     "global": {
       "anchors": [
         {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
+          "anchor": "Live demo",
+          "href": "https://aurora.breachlens.dev",
+          "icon": "play"
         },
         {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
+          "anchor": "GitHub",
+          "href": "https://github.com/breachlens-dev",
+          "icon": "github"
         }
       ]
     }
@@ -41,13 +42,13 @@
     "links": [
       {
         "label": "Support",
-        "href": "mailto:hi@mintlify.com"
+        "href": "mailto:hi@breachlens.app"
       }
     ],
     "primary": {
       "type": "button",
-      "label": "Dashboard",
-      "href": "https://app.mintlify.com"
+      "label": "Get a license",
+      "href": "mailto:hi@breachlens.app?subject=BreachLens%20license%20request"
     }
   },
   "contextual": {
@@ -64,9 +65,8 @@
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
+      "github": "https://github.com/breachlens-dev",
+      "linkedin": "https://linkedin.com/company/breachlens"
     }
   }
 }

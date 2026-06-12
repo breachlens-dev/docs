@@ -1,20 +1,52 @@
 ---
-title: "Introduction"
-description: "Welcome to your project"
+title: "BreachLens"
+description: "Self-hosted DevSecOps platform — 7 scanner tiers, multi-AI auto-fix, cross-tier attack-path correlation, fully air-gappable."
 ---
 
-Write a short description of your product here. What it does, who it's for, and what they can accomplish with it.
+BreachLens is the DevSecOps platform you can run inside your own perimeter. It orchestrates seven open-source scanner tiers, generates AI-powered fix patches using your own model keys, correlates findings across tiers into proof-of-exploit attack chains, and runs fully air-gapped for federal and regulated workloads.
 
-<Tip>
-  Ready to make this your own? Start by editing this page. Update your `docs.json` file to customize your site. Then fill out the [Quickstart](/quickstart) page.
-</Tip>
+<CardGroup cols={2}>
+  <Card title="Try the live demo" icon="play" href="https://aurora.breachlens.dev">
+    Sign in with GitHub or SSO and walk through a real scan against DVWA + WebGoat targets. No install required.
+  </Card>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Get BreachLens running on your own infrastructure with `docker compose` in under 10 minutes.
+  </Card>
+</CardGroup>
 
-<Card title="Quickstart" icon="rocket" href="/quickstart">
-  This card links to the quickstart page in your project.
-</Card>
-<Card title="Components" icon="puzzle-piece" href="https://mintlify.com/docs/components">
-  Add cards, callouts, steps, tabs, and more to design and structure your pages.
-</Card>
-<Card title="Settings" icon="gear" href="https://mintlify.com/docs/organize/settings">
-  Set your site name, branding, and navigation in the `docs.json` file.
-</Card>
+## What you get
+
+<CardGroup cols={2}>
+  <Card title="Seven scanner tiers" icon="layer-group">
+    SAST, SCA, secrets, IaC, container, DAST, and autonomous pentest — orchestrated as a single pipeline, no per-scanner integration work.
+  </Card>
+  <Card title="Multi-AI BYOA" icon="sparkles">
+    Plug in your own Anthropic, OpenAI, Gemini, or self-hosted Ollama keys. BreachLens generates auto-fix pull requests with the provider you choose, per service.
+  </Card>
+  <Card title="Cross-tier attack paths" icon="route">
+    A SAST finding in `payments-api` plus a container CVE plus a public DAST endpoint becomes one chain. Break one link, break the chain.
+  </Card>
+  <Card title="Proof-of-exploit video" icon="video">
+    Pentest findings that actually exploit get a replayable video. PR-grade evidence, not just a CVE number.
+  </Card>
+  <Card title="Function-level reachability" icon="crosshairs">
+    SCA findings tagged with whether the vulnerable function is actually reachable from your code. Stops you patching CVE-2024-X in a transitive dep no one calls.
+  </Card>
+  <Card title="Air-gappable" icon="shield-halved">
+    Every component runs offline. No telemetry phones home. Customer-pulls-vendor-never-pushes update model. Built for federal, financial, healthcare, defense.
+  </Card>
+</CardGroup>
+
+## Who it's for
+
+BreachLens is built for **AppSec engineers**, **DevSecOps leads**, **CISOs**, and **security architects** at mid-market and enterprise organizations who need:
+
+- A unified pipeline that replaces 5+ point tools (Snyk + Trivy + Checkov + ZAP + Burp + Pentera + Wiz)
+- Self-hosted deployment with no vendor data exfiltration
+- Auto-fix automation that doesn't lock them into one AI vendor
+- Compliance reporting (SOC 2, ISO 27001, OWASP Top 10, FedRAMP)
+- Cross-tier evidence for the actual exploits that matter
+
+<Note>
+  Looking for a license to deploy in production? Contact us at [hi@breachlens.app](mailto:hi@breachlens.app?subject=BreachLens%20license%20request) — we'll send the EULA and license JWT within 24 hours.
+</Note>
