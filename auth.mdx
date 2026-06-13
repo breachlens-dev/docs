@@ -1,0 +1,214 @@
+---
+title: "Authentication"
+description: "Sign-in surfaces, SSO providers, registration modes, and what works for your deployment scenario."
+---
+
+BreachLens is built for federal, regulated, and security-mature mid-market environments where the install is **closed by default**. There is no open registration. New users sign in via an explicit operator-curated path — invitation, SSO with a configured email domain allowlist, or local password for the break-glass admin.
+
+<Note>
+  Every authentication event — successful login, MFA enrollment, MFA reset, SSO callback, registration rejection, and break-glass admin actions — is recorded in the audit log. Federal procurement reviewers can export the full audit log from **Settings → Audit Log** as CSV evidence for SOC 2, FedRAMP, ISO 27001, and FISMA.
+</Note>
+
+## Sign-in surfaces
+
+BreachLens supports six sign-in methods. Operators choose which are enabled per install in **Settings → Auth**.
+
+| Method | Notes |
+|---|---|
+| **Local password** | Always available. Required for the break-glass admin. Argon2id hashing, password history N=5 by default. |
+| **Passkey (WebAuthn)** | Touch ID, Face ID, Windows Hello, YubiKey, or any FIDO2 authenticator. Phishing-resistant, procurement-friendly default. |
+| **SSO (OIDC)** | Five providers: Microsoft Entra ID, Okta, Google Workspace, Auth0, Keycloak. Multi-IdP per org. |
+| **GitHub OAuth** | **Disabled by default** on self-hosted installs. Enable in Settings → Auth for trial / POC deployments. |
+| **GitLab OAuth** | GitLab.com and self-hosted CE/EE. Set `GITLAB_OAUTH_BASE_URL=https://gitlab.acme.internal` for self-hosted. |
+| **Invitation link** | OWNER / ADMIN sends a one-shot link via email or copy-paste. Recipient sets password + enrolls MFA. 14-day expiry. |
+
+## Multi-IdP per organization
+
+A single BreachLens organization can have **N SSO configurations**, each scoped to a different email domain. This is the federal pattern — one customer org, multiple user populations, each routed to the IdP they already use.
+
+```
+Acme Corp (one BreachLens TEAM org)
+   ├─ Local password               → break-glass admin
+   ├─ Entra ID (acme.com)          → full-time employees
+   ├─ Auth0 (acme-contractors.com) → contractors
+   └─ Keycloak (partner-corp.com)  → external partner reviewers
+```
+
+Configure in **Settings → SSO → + Add provider**. Each config carries:
+
+| Field | Purpose |
+|---|---|
+| `name` | Operator label to disambiguate cards |
+| `provider` | Preset chooser — drives the IdP-specific setup guidance |
+| `issuerUrl` | OIDC discovery endpoint (BreachLens fetches `<issuer>/.well-known/openid-configuration`) |
+| `clientId` + `clientSecret` | From your IdP's app registration |
+| `allowedEmailDomains` | Routes incoming `user@<domain>` sign-ins to this config |
+| `defaultRole` | Assigned if no group claim matches |
+| `groupRoleMapping` | IdP group claim → BreachLens role |
+| `isActive` | Disable without deleting, for IdP migrations |
+
+## Registration modes
+
+Controls who can become a BreachLens user when their email isn't already in the database. Configure in **Settings → Auth** (OWNER-only). Every change is audited at HIGH severity.
+
+<CardGroup cols={3}>
+  <Card title="invite-only" icon="shield">
+    **Default for self-hosted.** A new sign-in is admitted only when a pending invitation matches the email or GitHub username.
+  </Card>
+  <Card title="domain-allowlist" icon="users">
+    Invitations work, and additionally a fresh SSO sign-in is admitted when the email domain matches `SsoConfig.allowedEmailDomains` or `Organization.primaryEmailDomain`. Auto-joins to the matched org with the appropriate default role.
+  </Card>
+  <Card title="open" icon="globe">
+    Reserved for the future BreachLens-hosted SaaS path. Any new sign-in creates a fresh PERSONAL org with OWNER role. **Do not enable on a self-hosted install** unless you understand the implications.
+  </Card>
+</CardGroup>
+
+## MFA — required for everyone
+
+After the first sign-in, every user must enroll MFA before they can use the platform. There is no skip option.
+
+<Tabs>
+  <Tab title="Passkey (recommended)">
+    WebAuthn registration via Touch ID, Face ID, Windows Hello, or a hardware security key. Phishing-resistant, single-step. Best UX on modern devices.
+
+    <Warning>
+      On Windows enterprise devices, Windows Hello for Business may intercept WebAuthn registration and route to the platform authenticator before the "use security key instead" picker appears. Workarounds: plug the YubiKey before clicking Enrol, press Esc on the Hello prompt to surface the chooser, or try Firefox instead of Edge/Chrome.
+    </Warning>
+  </Tab>
+  <Tab title="Authenticator app (TOTP)">
+    6-digit code from Google Authenticator, 1Password, Authy, or any RFC 6238 compatible app. Backup codes issued at enrollment — store them securely.
+  </Tab>
+</Tabs>
+
+<Note>
+  **Defense-in-depth posture.** BreachLens enforces its own MFA challenge AFTER successful IdP authentication, even for SSO users. We do not trust IdP auth alone to grant session access. This is the federal-grade default and is documented for procurement reviewers.
+</Note>
+
+## Code hosting — sign-in vs scanning
+
+Two separate questions you should answer independently: **how users sign IN to BreachLens**, and **how BreachLens reaches your repos** to scan them. Conflating them leads to fragile auth chains and slow user deprovisioning.
+
+### Code hosts are Service Providers, not Identity Providers
+
+In a properly designed enterprise auth architecture, your corporate IdP — Entra ID, Okta, ADFS, Keycloak, Ping — is the single source of truth. Every business app consumes identity from it independently:
+
+```
+Corporate IdP (Entra / Okta / ADFS / Keycloak)
+   ├── SAML  → GitHub Enterprise        (sign-in)
+   ├── SAML  → GitLab self-hosted       (sign-in)
+   └── OIDC  → BreachLens               (sign-in)
+
+BreachLens ↔ GitLab/GHE: OAuth / PAT — for repo scanning only, not auth
+```
+
+This is the federal- and regulated-friendly pattern. We recommend it for every customer above ~25 users.
+
+<Warning>
+  We deliberately do *not* recommend chaining BreachLens sign-in through your GitLab or GHE instance, even though our Generic OIDC client supports it. Reasons:
+
+  - **Extra failure mode** — GitLab outage = your security platform locked out.
+  - **Slower deprovision** — offboarding a leaver now means de-IdP + de-code-host + de-BreachLens, not just de-IdP.
+  - **Trust boundary you didn't ask for** — your code host now decides who can see security findings.
+
+  Procurement reviewers reading your auth diagram will flag this. Connect BreachLens to the IdP directly.
+</Warning>
+
+### What goes where
+
+| Deployment | User sign-in | Repository scanning |
+|---|---|---|
+| Cloud GitHub.com | Corporate IdP via OIDC/SAML | BreachLens GitHub App, one-click install |
+| Cloud GitLab.com | Corporate IdP via OIDC/SAML | OAuth or PAT-linked GitLab account |
+| GitLab self-hosted (CE/EE) | Corporate IdP via OIDC/SAML | OAuth or PAT-linked GitLab account |
+| **GitHub Enterprise Server (GHES)** | Corporate IdP via OIDC/SAML | **PAT + repo URL** via "By URL" tab |
+
+The "Repository scanning" column is the one place BreachLens talks to GitHub/GitLab — and only for what it sounds like: pulling code, opening PRs/MRs, posting check runs. Not for identity.
+
+### For GHES customers today
+
+Use **SSO** to your corporate IdP (Entra ID, Okta, Google Workspace, Auth0, or Keycloak) for sign-in. Your workforce already has it and it's the lowest-friction federal-friendly path.
+
+For scanning, paste each repo URL on the **Add Repository → By URL** tab and provide a Personal Access Token (PAT) scoped to that repo. The PAT is encrypted at rest using AES-256-GCM before storage.
+
+<Card title="GHES first-class support" icon="rocket" href="mailto:hi@breachlens.app?subject=GHES%20support%20roadmap">
+  Full GHES support — including a BreachLens GitHub App registered on your instance, PR check runs, and auto-fix PRs — is on the roadmap for 2026 Q1. Reach out if it's a procurement gate for your org.
+</Card>
+
+### Small-shop fallback: code host as IdP
+
+If you genuinely have no separate corporate IdP — early-stage commercial shops where GitLab or GitHub *is* your identity store — our Generic OIDC client can point at `https://gitlab.your-company.com` and treat it as the IdP. This works end-to-end (we tested it on aurora).
+
+Plan to migrate off this when you stand up a real IdP. The OIDC config lifecycle in BreachLens is per-org and per-domain, so swapping providers later is one Settings change.
+
+## Break-glass admin
+
+The first user created during `/setup` is the **break-glass admin** — undeletable, audited at HIGH severity for every action, and the operator's last-resort recovery path if SSO becomes unavailable (IdP outage, misconfigured allowlist, expired client secret, etc.).
+
+### Best practice
+
+The break-glass admin should sign in **only via local password + MFA**, never via SSO. The reason:
+
+<Warning>
+  If you configure an SSO provider whose `allowedEmailDomains` matches the break-glass admin's email, **their next SSO login will downgrade them** to the SSO config's `defaultRole` (typically DEVELOPER). They lose OWNER permissions, and the install no longer has a break-glass admin until someone manually promotes another user.
+</Warning>
+
+Two ways to keep the break-glass intact:
+
+1. Create the break-glass admin with an email that **does not match any SsoConfig domain**. For example, `admin@your-company.internal` while SSO covers `your-company.com`.
+2. Always use the email + password form on `/login` for the break-glass admin — never the "Sign in with SSO" path — even if their email matches.
+
+### Recovery via CLI
+
+If the break-glass admin loses their MFA factor, an operator with shell access to the api pod can reset it:
+
+```bash
+kubectl exec -n breachlens deployment/api -- \
+  node --import tsx /app/apps/api/src/cli/break-glass-mfa-reset.ts \
+  break-glass@your-company.internal
+```
+
+The reset is recorded in the audit log at HIGH severity. On the next login, the break-glass admin is redirected to `/account/mfa/enroll` to set up a new factor.
+
+## Audit log surface for procurement
+
+These authentication events are written to the immutable audit log and exportable as CSV:
+
+| Action | Severity | Recorded when |
+|---|---|---|
+| `platform.setup` | HIGH | First OWNER created during /setup |
+| `platform.registration_mode` | HIGH | OWNER toggles registration mode |
+| `auth.login` | INFO | Successful email + password login |
+| `auth.break_glass_login` | HIGH | Break-glass admin signs in |
+| `sso.login` | INFO | Successful SSO callback |
+| `mfa.enroll` | INFO | User enrolls a new factor |
+| `mfa.reset` | HIGH | MFA factor reset via Owner UI or CLI |
+
+Filter, search, and export from **Settings → Audit Log**. Retention is unlimited; nothing rolls off automatically.
+
+## Frequently asked
+
+<AccordionGroup>
+  <Accordion title="Can I disable the GitHub OAuth button entirely?">
+    Yes — **Settings → Auth → Allow GitHub OAuth login → OFF**. The button disappears from `/login` and the `/auth/github` route returns 410 Gone. Default for new installs is OFF.
+  </Accordion>
+
+  <Accordion title="Can one user belong to multiple BreachLens organizations?">
+    Yes. A user can have memberships across multiple TEAM orgs and switch between them via the sidebar org switcher. Common when the install hosts multiple business units or when a contractor works for two customer orgs on a shared install.
+  </Accordion>
+
+  <Accordion title="What if my IdP's groups change after the user's last login?">
+    BreachLens re-resolves the role on every SSO login. Group changes propagate the next time the user signs in. For non-SSO users, role changes require explicit admin action in Settings → Members.
+  </Accordion>
+
+  <Accordion title="Does BreachLens send email on invitations?">
+    No — by design. The invitation flow generates a one-shot link that the inviting admin shares via Slack, IM, paper, or any out-of-band channel. This works in air-gapped installs with no egress and avoids dependency on an SMTP relay. Link expires in 14 days.
+  </Accordion>
+
+  <Accordion title="Why does Google SSO require the `email` and `profile` scopes?">
+    Google's OIDC implementation is strict — it silently drops the `email` claim from `/userinfo` if you only request `openid`. BreachLens sends `openid email profile` to satisfy both Google's strictness and the more lenient providers like Entra ID and Okta in a single code path.
+  </Accordion>
+
+  <Accordion title="My Windows Hello for Business intercepted my YubiKey at enrollment. What now?">
+    Known behavior of enterprise-managed Windows installs — Hello for Business prefers itself before showing the "use a security key" picker. Plug the YubiKey first, press Esc on the Hello prompt to fall back to the chooser, or try Firefox. The WebAuthn protocol itself supports both; the Windows shell is what's interceding.
+  </Accordion>
+</AccordionGroup>
