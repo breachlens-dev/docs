@@ -1,0 +1,106 @@
+---
+title: "MCP servers"
+description: "Scan Model Context Protocol servers for prompt injection, tool poisoning, token theft, and other AI-agent attack-surface risks."
+---
+
+BreachLens has two relationships with the Model Context Protocol (MCP). Today, BreachLens **scans** MCP servers as a first-class target type, surfacing the new attack surface that AI agents introduce when they connect to tool servers. On the roadmap, BreachLens itself will **expose** its findings and scan operations as an MCP server, so agents like Claude, Cursor, and Windsurf can query and act on your security state natively.
+
+## Scanning MCP servers (today)
+
+MCP servers let AI agents call tools, read resources, and follow prompts on your behalf. That convenience comes with a brand-new attack surface: a malicious or compromised MCP server can plant covert directives in tool descriptions, exfiltrate environment variables through `read_file`-style tools, shadow a canonical tool name, or rug-pull its definition after the operator trusted it once.
+
+BreachLens scans MCP servers across four transports and ten threat classes, returning findings into the same triage flow you already use for SAST, DAST, and container scans.
+
+### Add an MCP server target
+
+<Steps>
+  <Step title="Open the MCP servers list">
+    From the sidebar, navigate to **MCP servers**. The list view shows every server registered in the active org, scoped by `lastSeen`.
+  </Step>
+
+  <Step title="Click Add MCP server">
+    Pick a short, recognizable **Name** (this is how the server shows up in findings and reports). Optionally add a **Description** explaining what tools it exposes and which agents use it.
+  </Step>
+
+  <Step title="Choose a transport">
+    BreachLens supports all four MCP transports:
+
+    - **STDIO** — local subprocess. `endpoint` is the full command, for example `npx -y @modelcontextprotocol/server-filesystem /workspace`.
+    - **HTTP** — direct JSON-RPC over HTTP. `endpoint` is the base URL.
+    - **SSE** — Server-Sent Events. `endpoint` is the `/sse` URL of the server.
+    - **WEBSOCKET** — full-duplex over WebSockets. `endpoint` is the `ws://` or `wss://` URL.
+  </Step>
+
+  <Step title="Attach auth (optional)">
+    If the server requires credentials, paste them in the auth field. They get encrypted at rest and are decrypted only inside the scanner worker for the duration of a scan run. The list view shows a `hasAuth` boolean — never the credential itself.
+  </Step>
+
+  <Step title="Run scan">
+    From the server's detail page, click **Run scan**. BreachLens dispatches a `SCAN_MCP_SERVER` job. The scanner handshakes with the server, enumerates its tools, resources, and prompts, then runs all ten probes in order.
+  </Step>
+</Steps>
+
+<Note>
+  Creating an MCP server target requires the `SECURITY` role or higher. Triggering a scan requires `DEVELOPER` or higher.
+</Note>
+
+### What gets probed
+
+BreachLens runs ten probes per scan: five fast deterministic heuristic checks, four LLM-judged checks that call your configured AI provider for nuanced verdicts, and one pure-Python synthesis probe that chains the prior nine into multi-vector attack paths.
+
+<CardGroup cols={2}>
+  <Card title="Heuristic probes" icon="shield-check">
+    Five deterministic checks that need no AI roundtrip.
+
+    - **ExcessivePermission** — tools that grant unrestricted FS, shell, or network access.
+    - **ToolShadowing** — canonical names (`search`, `read_file`) that could intercept a trusted tool.
+    - **TokenTheft** — response shapes that leak env vars, AWS keys, or SSH credentials.
+    - **MaliciousCodeExec** — tools that actually `eval` the canary payload BreachLens injects.
+    - **RemoteAccess** — tools advertising SMTP, reverse-shell, or arbitrary outbound fetch.
+  </Card>
+  <Card title="LLM-judged probes" icon="sparkles">
+    Four probes that use your configured AI provider to judge intent.
+
+    - **PromptInjection** — direct injection payloads sent through tool arguments.
+    - **ToolPoisoning** — covert directives hidden in tool descriptions (incl. zero-width and base64).
+    - **RugPull** — mutable version tags or description tampering between scans.
+    - **IndirectInjection** — injected content delivered through `resources/read`.
+  </Card>
+</CardGroup>
+
+A tenth probe, **MultiVector**, runs after the nine above. It is pure-Python synthesis over the findings produced so far, correlating pairs like PromptInjection + MaliciousCodeExec into chain-grade CONFIRMED findings without an extra AI roundtrip.
+
+### Where results show up
+
+Probe results land in the standard **Findings** list. Filter by `scanType = MCP_SERVER` to see only MCP-related findings. Each finding has the usual evidence panel, fingerprint, severity, confidence, and AI summary surfaces. Cross-tier correlation treats MCP servers as first-class assets, so an MCP finding can link to the application, repository, or container that uses the server.
+
+<Tip>
+  Want a printable evidence pack? `ADMIN` users can export an MCP fleet report or a per-server report from the detail page. Both render as styled HTML and PDF.
+</Tip>
+
+### Try it against the bundled vulnerable server
+
+The BreachLens repo ships a deliberately-vulnerable MCP server at `apps/dvmcp/` — the MCP equivalent of DVWA. Every tool is engineered to trip a specific probe (the `execute` tool actually `eval`s input, `read_file` returns fake AWS keys when asked for `/proc/self/environ`, and `helpful_helper` plants base64-encoded directives in its description). Bring it up under the `mcp-targets` Compose profile to validate your probe pipeline end-to-end without touching a production server.
+
+## BreachLens as an MCP server (roadmap)
+
+<Note>
+  Coming in a future release. BreachLens will expose its findings and scan operations as an MCP server, so AI agents (Claude, Cursor, Windsurf, and others) can query and act on your security state natively, without a custom API integration.
+</Note>
+
+Planned agent-facing tools (subject to change):
+
+- `list_findings` — query findings by severity, scan type, target, or attack-path membership. *Roadmap.*
+- `simulate_fix` — dry-run a proposed patch and see which downstream correlation links it would break before opening a PR. *Roadmap.*
+- `trigger_scan` — kick off a scan against a target the agent has been granted access to. *Roadmap.*
+- `get_attack_path` — fetch a chain by id with the same evidence the UI renders. *Roadmap.*
+
+When this ships, the same probes BreachLens runs against third-party MCP servers will run against its own MCP surface as part of every release.
+
+## Why this matters
+
+MCP is the connector layer for the next generation of AI workflows. The security audit hasn't caught up with the AI-agent revolution yet, which means most operators are wiring agents into production tools with no visibility into prompt-injection, tool-poisoning, or token-theft risk. BreachLens treats every MCP server you register as the same kind of asset as a repository or a domain - inventoried, scanned, correlated, and reported - so the agent attack surface lands in the same triage flow your AppSec team already runs.
+
+For federal and regulated workloads, all ten probes run fully air-gapped. The four LLM-judged probes call your configured AI provider, which can be an internal Ollama or vLLM endpoint — nothing leaves your perimeter.
+
+Need help wiring up your first MCP server or scoping a federal deployment? Reach out at [hi@breachlens.app](mailto:hi@breachlens.app).

@@ -1,0 +1,65 @@
+---
+title: "CLI"
+description: "BreachLens is API-first today. A full operator CLI is on the roadmap."
+---
+
+BreachLens is API-first today. A full `breachlens` operator CLI is on the roadmap; until it ships, two surfaces cover all common operations: a license-issuance script that ships with the install bundle, and the VS Code extension for everyday in-editor work. For everything else, the REST API at `/api/*` is the workhorse.
+
+## What ships today
+
+<CardGroup cols={2}>
+  <Card title="License CLI" icon="key" href="#license-cli">
+    Issue and apply license JWTs, generate the signed EULA bundle. Ships in `scripts/license/` in the install tarball.
+  </Card>
+  <Card title="VS Code extension" icon="code" href="/ide/vscode">
+    Find-to-fix loop inside the editor. Squigglies, lightbulb fixes, side-by-side diff preview, one-click PR.
+  </Card>
+</CardGroup>
+
+### License CLI
+
+The license-issuance pipeline lives at `scripts/license/issue-license.ts` and runs under `tsx`. It wraps the underlying `sign-license.ts` signer and produces a customer-ready bundle: a printable HTML cover + install guide + JWT + EULA, a raw `.jwt` file for env-var workflows, a standalone EULA HTML for legal review, and an append-only CSV ledger row.
+
+Typical invocation:
+
+```bash
+pnpm tsx scripts/license/issue-license.ts \
+  --customer acme-corp \
+  --customer-display-name "Acme Corp" \
+  --contact-email security@acme.com \
+  --tier MID \
+  --days 365 \
+  --seats 50
+```
+
+Output lands under `out/licenses/<customer>-<jti-short>/`:
+
+- `license-bundle.html` - open in a browser, print to PDF, send to the customer
+- `license.jwt` - the raw signed JWT for `LICENSE_KEY` env-var workflows
+- `eula.html` - standalone EULA for legal red-line
+- `out/licenses/ledger.csv` - append-only audit log of every issuance
+
+<Note>
+  The signing keypair must exist at `scripts/license/keys/` before you run the issuer. Generate it once per release line with `pnpm tsx scripts/license/generate-keypair.ts`. Treat the entire `out/licenses/` tree as confidential - it contains real signed licenses that unlock premium features.
+</Note>
+
+Operators applying a license (rather than issuing one) have two paths, both documented inside the generated bundle:
+
+- **Web UI:** **Settings** -> **Operations** -> **License** card -> **Apply license**, paste the JWT.
+- **Env vars:** set `LICENSE_KEY` (and `LICENSE_PUBLIC_KEY` for custom release lines) on the api container, then restart.
+
+Verification is fully offline - the api uses the embedded ed25519 public key to check the JWT signature locally, with no network call to BreachLens infrastructure.
+
+## What's coming
+
+<Note>
+  A `breachlens` CLI covering scan, watch, finding, and fix verbs is on the roadmap. It will wrap the same REST endpoints used by the web UI and VS Code extension. If you want release notifications, email [hi@breachlens.app](mailto:hi@breachlens.app?subject=BreachLens%20CLI%20interest) and we will add you to the list.
+</Note>
+
+We are intentionally not publishing a flag reference for a CLI that does not exist yet. When it ships, this page becomes the canonical reference.
+
+## Until the CLI lands
+
+For scripting, CI integration, and custom dashboards, the REST API is the supported surface. Every action the web UI takes is a documented HTTP call, authenticated with a personal access token issued under **Settings** -> **API Tokens**. Most operator workflows - triggering scans, listing findings, applying license JWTs, generating fix PRs - are one `curl` away.
+
+See [API reference](/api) for endpoints, auth, and examples.

@@ -1,0 +1,232 @@
+---
+title: "REST API"
+description: "Drive BreachLens from CI pipelines, scripts, and custom dashboards with bearer-token auth."
+---
+
+Every surface in the BreachLens web UI is backed by the same REST API mounted at `https://<your-install>/api/*`. CI runners, internal scripts, and bespoke dashboards authenticate with a long-lived bearer token minted in **Settings** -> **API Tokens**.
+
+<Tip>
+  If you're integrating with VS Code instead, the IDE extension handles auth for you. See the [VS Code guide](/ide/vscode).
+</Tip>
+
+## Get a token
+
+<Steps>
+  <Step title="Open the API Tokens tab">
+    In the BreachLens web UI, navigate to **Settings** -> **API Tokens** (`/settings?tab=tokens`). You need the ADMIN role or higher to mint a token.
+  </Step>
+
+  <Step title="Generate a new token">
+    Click **Generate token**. Set:
+
+    - **Name** - a short label, e.g. `github-actions-prod`.
+    - **Scopes** - any combination of `scans:trigger`, `scans:read`, `findings:read`. Tokens follow least-privilege; pick only what the integration needs.
+    - **Expiry** - 30 days, 90 days, 180 days, 1 year, or never.
+  </Step>
+
+  <Step title="Copy the token">
+    BreachLens returns the plaintext token once and never again. It starts with `blt_` (e.g. `blt_aB3xK9qL...`). Paste it into your CI secret store immediately; if you lose it, mint a new one.
+
+    <Warning>
+      The server stores only a SHA-256 hash plus a 12-character display prefix. Closing the modal without copying means the token is gone for good.
+    </Warning>
+  </Step>
+</Steps>
+
+Tokens are org-scoped at mint time. The active org of the requester becomes the token's permanent org; you cannot use one token to read another org's data.
+
+## Authenticate
+
+Every request sends `Authorization: Bearer <token>`. Bearer auth takes precedence over any session cookie on the same request.
+
+<CodeGroup>
+```bash curl
+curl -H "Authorization: Bearer blt_aB3xK9qL..." \
+  https://breachlens.example.com/api/findings
+```
+
+```javascript Node
+// fetch
+const res = await fetch("https://breachlens.example.com/api/findings", {
+  headers: { Authorization: `Bearer ${process.env.BREACHLENS_TOKEN}` },
+});
+const body = await res.json();
+```
+
+```python Python
+# httpx
+import os, httpx
+
+r = httpx.get(
+    "https://breachlens.example.com/api/findings",
+    headers={"Authorization": f"Bearer {os.environ['BREACHLENS_TOKEN']}"},
+)
+r.raise_for_status()
+print(r.json())
+```
+</CodeGroup>
+
+A token without the scope a route requires gets `403` with a structured body identifying the missing scope:
+
+```json
+{
+  "error": "API token missing required scope",
+  "required": "scans:trigger",
+  "granted": ["scans:read", "findings:read"]
+}
+```
+
+## Example: list findings
+
+`GET /api/findings` returns a paginated, org-scoped list. Filters compose with `AND`; multi-value filters accept comma-separated values or repeated query keys.
+
+```bash
+curl -G "https://breachlens.example.com/api/findings" \
+  -H "Authorization: Bearer $BREACHLENS_TOKEN" \
+  --data-urlencode "severity=CRITICAL,HIGH" \
+  --data-urlencode "scanType=SAST,SCA" \
+  --data-urlencode "status=OPEN" \
+  --data-urlencode "hasAttackPath=true" \
+  --data-urlencode "page=1" \
+  --data-urlencode "limit=25"
+```
+
+Common filters confirmed against the route handler:
+
+- `severity` - `CRITICAL`, `HIGH`, `MEDIUM`, `LOW`, `INFO`
+- `scanType` - `SAST`, `SCA`, `SECRET`, `IAC`, `CONTAINER`, `DAST`, `PENTEST_FULL`, `CLOUD`, `RUNTIME`, `GITHUB_POSTURE`, `AI_SECURITY`
+- `status` - `OPEN`, `ACKNOWLEDGED`, `FALSE_POSITIVE`, `FIXED`, `IGNORED`
+- `confidence` - `CONFIRMED`, `LIKELY`, `POSSIBLE`
+- `hasAttackPath` - `true` / `false`
+- `hasVideo` - `true` / `false` (proof-of-exploit replay)
+- `hasPatch` - `true` / `false` (cached AI auto-fix patch)
+- `page` - defaults to `1`
+- `limit` - defaults to `25`, capped at `100`
+
+Response shape:
+
+```json
+{
+  "data": [
+    { "id": "...", "title": "...", "severity": "HIGH", "scanType": "SAST", "status": "OPEN", "..." : "..." }
+  ],
+  "total": 137,
+  "page": 1,
+  "limit": 25,
+  "totalPages": 6
+}
+```
+
+<Note>
+  For the full per-finding field shape, hit the endpoint once and inspect a row, or open the finding in the web UI and use the same fields the drawer reads. Field names are stable across releases; new fields are additive.
+</Note>
+
+## Example: trigger a scan
+
+The CI-friendly endpoint takes a GitHub `owner/repo` and auto-discovers or creates the BreachLens repository row, then queues the scan. Requires the `scans:trigger` scope.
+
+```bash
+curl -X POST "https://breachlens.example.com/api/scans/from-github" \
+  -H "Authorization: Bearer $BREACHLENS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "githubFullName": "my-org/payments-api",
+    "commitSha": "a1b2c3d4",
+    "branch": "main",
+    "prNumber": 42,
+    "scanTypes": ["SAST", "SCA", "SECRET", "IAC"]
+  }'
+```
+
+`scanTypes` is optional; omit it to run the default `["SAST", "SCA", "SECRET", "IAC"]` bundle. The response is `202 Accepted`:
+
+```json
+{
+  "scanJobId": "cmplvgemf0000abcd",
+  "repository": {
+    "id": "...",
+    "fullName": "my-org/payments-api",
+    "newlyCreated": false
+  }
+}
+```
+
+The scan runs asynchronously on the BullMQ worker pool. Poll the status endpoint or subscribe to the SSE stream at `GET /api/scans/:id/events` for live progress.
+
+<Note>
+  To trigger a scan against a repository already known to BreachLens, `POST /api/repos/:id/scan` with the same body shape (minus `githubFullName`). The repo route requires the `scans:trigger` scope plus DEVELOPER role or higher.
+</Note>
+
+## Example: poll scan status
+
+```bash
+curl "https://breachlens.example.com/api/scans/cmplvgemf0000abcd" \
+  -H "Authorization: Bearer $BREACHLENS_TOKEN"
+```
+
+`status` is one of `PENDING`, `RUNNING`, `COMPLETED`, `FAILED`, or `CANCELLED`. Active scans also include `currentPhase` and `currentPhasePct` so CI logs can render a progress bar.
+
+```json
+{
+  "id": "cmplvgemf0000abcd",
+  "status": "RUNNING",
+  "scanTypes": ["SAST", "SCA", "SECRET", "IAC"],
+  "startedAt": "2026-06-18T10:42:11.000Z",
+  "completedAt": null,
+  "currentPhase": "scanning",
+  "currentPhasePct": 38,
+  "confirmedCount": 0,
+  "newThisScan": 0
+}
+```
+
+Once `status` flips to `COMPLETED`, fetch findings via `GET /api/findings?scanType=...` or export SARIF 2.1.0 for upload to GitHub Code Scanning, GitLab, Bitbucket, or Azure DevOps:
+
+```bash
+curl "https://breachlens.example.com/api/scans/cmplvgemf0000abcd/export.sarif" \
+  -H "Authorization: Bearer $BREACHLENS_TOKEN" \
+  -o results.sarif
+```
+
+## Rate limiting
+
+`/api/*` is capped at **300 requests per minute** per source. Hit the cap and BreachLens returns `429` with `{"error":"Too many requests, please slow down"}`. Back off and retry; tokens are not penalized.
+
+A handful of unauthenticated routes (`/auth/sso/initiate`, `/auth/login`, `/api/setup`, `/api/invitations`, `/api/password-resets`) use a stricter 10-per-15-minute bucket. Bearer-authenticated calls never hit that limiter.
+
+## Errors
+
+BreachLens uses standard HTTP status codes. Error bodies are JSON and always include an `error` field.
+
+| Status | Meaning | Example body |
+| --- | --- | --- |
+| `401` | Missing, invalid, or expired token | `{"error":"Invalid or expired API token"}` |
+| `402` | Endpoint requires a license tier you don't have | `{"error":"...","code":"FEATURE_NOT_LICENSED","feature":"..."}` |
+| `403` | Token missing a required scope, or role-gate failure | `{"error":"API token missing required scope","required":"scans:trigger","granted":["scans:read"]}` |
+| `404` | Resource not found in your active org | `{"error":"Scan job not found"}` |
+| `409` | Conflict (e.g. resource already exists) | `{"error":"Resource already exists"}` |
+| `422` | Request body failed validation | `{"error":"Validation error","details":{"scanTypes":["Required"]}}` |
+| `429` | Rate-limited | `{"error":"Too many requests, please slow down"}` |
+| `500` | Unhandled server error - file an issue with the `x-request-id` header | `{"error":"Internal server error"}` |
+
+Every request gets an `x-request-id` response header; include it when contacting support.
+
+## OpenAPI spec
+
+<Note>
+  A machine-readable OpenAPI 3.1 spec for the BreachLens REST API is on the roadmap. For now, this page is the canonical reference - the routes documented here are stable, and new endpoints are additive.
+</Note>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="VS Code extension" icon="code" href="/ide/vscode">
+    Use BreachLens from inside your editor. No token wiring needed.
+  </Card>
+  <Card title="MCP server" icon="plug" href="/mcp">
+    Wrap BreachLens for AI agents and chat-driven workflows.
+  </Card>
+  <Card title="Need help?" icon="envelope" href="mailto:hi@breachlens.app">
+    Email the team. Every licensed customer gets a dedicated channel.
+  </Card>
+</CardGroup>

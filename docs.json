@@ -23,6 +23,20 @@
         "pages": [
           "auth"
         ]
+      },
+      {
+        "group": "IDE",
+        "pages": [
+          "ide/vscode"
+        ]
+      },
+      {
+        "group": "Reference",
+        "pages": [
+          "cli",
+          "mcp",
+          "api"
+        ]
       }
     ],
     "global": {
