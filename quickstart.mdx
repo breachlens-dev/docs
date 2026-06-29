@@ -71,9 +71,22 @@ Before you begin, you must have:
 
 <Steps>
   <Step title="Install the BreachLens GitHub App">
-    From the onboarding wizard, click **Connect GitHub**. You'll be redirected to install the BreachLens GitHub App on your org or personal account.
+    From the onboarding wizard, click **Connect GitHub**. You'll be redirected to install the BreachLens GitHub App on your org or personal account. It requests **read-only** access to repository contents and metadata, plus write access to checks and pull requests (for PR gating and auto-fix PRs).
 
-    Pick the repos you want to scan. The minimum scopes are read-only on contents and metadata.
+    When GitHub asks which repositories to grant, you choose the scope:
+
+    <CardGroup cols={2}>
+      <Card title="All repositories" icon="circle-check">
+        Simplest. New repos appear in BreachLens automatically — connect once, never return to GitHub. Recommended for demos and most teams.
+      </Card>
+      <Card title="Only select repositories" icon="lock">
+        Least privilege. You hand-pick which repos the App can see. To scan a new one later, add it to the installation on GitHub first — one click from the **Manage on GitHub** link in the Add-repository modal.
+      </Card>
+    </CardGroup>
+
+    <Note>
+      Granting access is **not** the same as scanning. The scope you choose only controls which repos appear in the picker — nothing is scanned until you add a repo in BreachLens and run a scan. "All repositories" is read-only and safe; scanning stays opt-in, one repo at a time.
+    </Note>
   </Step>
 
   <Step title="Trigger a scan">
