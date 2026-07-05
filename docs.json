@@ -4,9 +4,9 @@
   "name": "BreachLens",
   "description": "Self-hosted DevSecOps — 7 scanner tiers, multi-AI auto-fix, cross-tier attack-path correlation, air-gappable for federal.",
   "colors": {
-    "primary": "#4F46E5",
-    "light": "#6366F1",
-    "dark": "#4338CA"
+    "primary": "#1D4ED8",
+    "light": "#3B82F6",
+    "dark": "#1E40AF"
   },
   "favicon": "/favicon.svg",
   "navigation": {

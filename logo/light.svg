@@ -1,10 +1,10 @@
 <svg width="180" height="28" viewBox="0 0 180 28" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="BreachLens">
   <title>BreachLens</title>
   <svg x="0" y="2" width="24" height="24" viewBox="0 0 1024 1024">
-    <g transform="translate(0 1024) scale(0.1 -0.1)" fill="#4f46e5" fill-rule="evenodd">
+    <g transform="translate(0 1024) scale(0.1 -0.1)" fill="#1D4ED8" fill-rule="evenodd">
       <path d="M5055 8374 c-16 -2 -73 -9 -125 -15 -1248 -140 -2347 -1110 -2640 -2329 -442 -1847 794 -3639 2713 -3932 173 -27 723 -34 765 -10 22 13 37 682 15 695 -5 2 -62 -2 -128 -10 -954 -116 -1971 434 -2444 1322 -828 1552 209 3454 1943 3561 116 7 116 7 116 365 0 387 6 378 -215 353z M7347 7695 c-468 -119 -630 -690 -292 -1031 388 -393 1057 -124 1059 426 2 403 -379 703 -767 605z M5035 7084 c-1510 -231 -2096 -2103 -1003 -3204 1103 -1111 3007 -488 3222 1055 47 332 59 320 -325 323 -345 2 -345 2 -358 -117 -132 -1283 -1862 -1503 -2317 -295 -262 697 285 1534 1003 1534 10 0 13 75 13 360 0 402 14 382 -235 344z M7796 5248 c-3 -7 -7 -76 -10 -153 -21 -529 -208 -1023 -551 -1458 -36 -45 -65 -86 -65 -92 0 -12 401 -417 418 -423 6 -2 44 41 86 94 361 457 582 964 667 1529 24 161 42 485 27 503 -8 9 -78 12 -290 12 -214 0 -280 -3 -282 -12z M6732 2643 l3 -448 439 -3 c242 -1 444 2 448 6 8 8 -859 882 -882 890 -7 3 -9 -151 -8 -445z"/>
     </g>
-    <circle cx="538" cy="498" r="75" fill="#ffffff"/>
+    <circle cx="538" cy="498" r="75" fill="#1D4ED8"/>
   </svg>
-  <text x="32" y="20" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, Inter, Arial, sans-serif" font-size="17" font-weight="700" fill="#4f46e5" letter-spacing="-0.4">BreachLens</text>
+  <text x="32" y="20" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, Inter, Arial, sans-serif" font-size="17" font-weight="700" fill="#1D4ED8" letter-spacing="-0.4">BreachLens</text>
 </svg>
