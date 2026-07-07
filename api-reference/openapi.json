@@ -3,16 +3,16 @@
   "info": {
     "title": "BreachLens API",
     "version": "0.1.0",
-    "description": "Customer-facing scan API for BreachLens — trigger a scan, poll its status, and download SARIF. This is the same surface the `breachlens` CLI and the GitHub Action / GitLab templates drive.\n\n**Base URL:** your own BreachLens deployment (self-hosted or hosted edge). Set the `deployment` server variable in the playground to your host.\n\n**Auth:** a scoped API token minted in **Settings → API Tokens** (`scans:trigger` + `scans:read`), sent as `Authorization: Bearer blt_…`. Deployments fronted by Cloudflare Access ALSO require the `CF-Access-Client-Id` / `CF-Access-Client-Secret` service-token headers (optional fields on each request; leave blank for self-hosted).\n\n**Try-it note:** point the playground at a reachable deployment or a sandbox — a browser/proxy request cannot clear a Cloudflare Access perimeter without a service token, so do not target a CF-Access-fronted host with only a bearer token.\n\n**Flow:** trigger (one target) → poll `GET /api/scans/{scanId}` until `COMPLETED` → download `GET /api/scans/{scanId}/export.sarif`."
+    "description": "Customer-facing scan API for BreachLens — trigger a scan, poll its status, and download SARIF. This is the same surface the `breachlens` CLI and the GitHub Action / GitLab templates drive.\n\n**Base URL:** your own BreachLens deployment (self-hosted or hosted edge). Set the `baseUrl` server variable in the playground to your deployment's full URL (including `https://`).\n\n**Auth:** a scoped API token minted in **Settings → API Tokens** (`scans:trigger` + `scans:read`), sent as `Authorization: Bearer blt_…`. Deployments fronted by Cloudflare Access ALSO require the `CF-Access-Client-Id` / `CF-Access-Client-Secret` service-token headers (optional fields on each request; leave blank for self-hosted).\n\n**Try-it note:** point the playground at a reachable deployment or a sandbox — a browser/proxy request cannot clear a Cloudflare Access perimeter without a service token, so do not target a CF-Access-fronted host with only a bearer token.\n\n**Flow:** trigger (one target) → poll `GET /api/scans/{scanId}` until `COMPLETED` → download `GET /api/scans/{scanId}/export.sarif`."
   },
   "servers": [
     {
-      "url": "https://{deployment}",
+      "url": "{baseUrl}",
       "description": "Your BreachLens deployment",
       "variables": {
-        "deployment": {
-          "default": "your-breachlens.example.com",
-          "description": "Host of your self-hosted or hosted BreachLens instance, no scheme or trailing slash (e.g. breachlens.acme.com)."
+        "baseUrl": {
+          "default": "https://your-breachlens.example.com",
+          "description": "Full base URL of your BreachLens deployment — include https:// and no trailing slash (e.g. https://breachlens.acme.com). Paste the whole URL; do not add a second https://."
         }
       }
     }
