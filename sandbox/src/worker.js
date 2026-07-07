@@ -57,16 +57,10 @@ export default {
       });
     }
 
-    // Demo auth — any blt_ bearer is accepted (public, read-only).
-    if (!/^Bearer\s+blt_/i.test(request.headers.get("authorization") || "")) {
-      return json(
-        {
-          error: "Missing or invalid API token",
-          hint: "Public sandbox — use the pre-filled blt_demo token in the playground.",
-        },
-        401,
-      );
-    }
+    // No auth required — this is a public, read-only demo sandbox. A bearer is
+    // accepted if sent (so a request shaped for the real API still works), but
+    // none is needed: there is nothing here worth protecting, and zero-setup
+    // "just click Send" is the whole point.
 
     // Trigger (canned) — from-github
     if (method === "POST" && path === "/api/scans/from-github") {
