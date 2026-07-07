@@ -1,65 +1,199 @@
 ---
 title: "CLI"
-description: "BreachLens is API-first today. A full operator CLI is on the roadmap."
+description: "Trigger a BreachLens scan from any terminal or CI pipeline and gate the build on severity — a thin, headless client for your self-hosted BreachLens API."
 ---
 
-BreachLens is API-first today. A full `breachlens` operator CLI is on the roadmap; until it ships, two surfaces cover all common operations: a license-issuance script that ships with the install bundle, and the VS Code extension for everyday in-editor work. For everything else, the REST API at `/api/*` is the workhorse.
+The `breachlens` CLI is a **thin client**: it scans nothing locally. It drives your
+self-hosted BreachLens API — trigger a scan, wait for it, download the SARIF, and
+turn the result into an **exit code**. That exit code is the whole point: `0` passes,
+`1` fails the build.
 
-## What ships today
+<Note>
+  The CLI carries no scanners (~200 KB, Node ≥ 20). Your code is cloned and analysed
+  **server-side** on your BreachLens deployment — so the same binary drops into a
+  laptop pre-push hook, a GitHub Action, or a GitLab job with nothing but a different
+  `--severity-gate`.
+</Note>
+
+## Install
+
+<CodeGroup>
+```bash npx (no install)
+npx @breachlens/cli scan --help
+```
+
+```bash global
+npm install -g @breachlens/cli
+breachlens scan --help
+```
+
+```bash from your install bundle
+# self-hosted bundles ship the source under apps/cli/
+cd apps/cli && npm install && npm run build
+node dist/index.js scan --help
+```
+</CodeGroup>
+
+## Quickstart
+
+Point it at your deployment, pass a token, name a target, and set a gate:
+
+```bash
+breachlens scan \
+  --api-url https://breachlens.example.com \
+  --token   blt_xxxxxxxx \
+  --repo    my-org/my-service \
+  --severity-gate HIGH
+```
+
+Progress prints to **stderr**; **stdout** and the **exit code** stay clean for CI.
+Every value can come from the environment instead of a flag — ideal for CI secrets:
+
+```bash
+export BREACHLENS_API_URL=https://breachlens.example.com
+export BREACHLENS_API_TOKEN=blt_xxxxxxxx
+breachlens scan --repo my-org/my-service --severity-gate HIGH
+```
+
+## How it works
+
+<Steps>
+  <Step title="Trigger">
+    `POST` to the API. `--repo owner/name` hits `/api/scans/from-github`, which
+    **auto-onboards** the repo on first run; explicit IDs hit
+    `/api/{repos,containers,domains}/:id/scan`.
+  </Step>
+  <Step title="Poll">
+    Scans are async, so the CLI polls `/api/scans/:id` every `--poll-interval` seconds
+    until `COMPLETED` (or `FAILED`), with a hard `--timeout`.
+  </Step>
+  <Step title="Fetch SARIF">
+    Downloads `/api/scans/:id/export.sarif` to a file — the standard format your
+    pipeline can upload to its security tab.
+  </Step>
+  <Step title="Gate">
+    Counts findings by severity and compares to `--severity-gate`. Any finding at or
+    above the threshold exits `1`; `none` reports without ever failing.
+  </Step>
+</Steps>
+
+## Authentication
+
+Mint a scoped token in **Settings → API Tokens** with the `scans:trigger` and
+`scans:read` scopes. Pass it as `--token` (or `BREACHLENS_API_TOKEN`); it authenticates
+as `Authorization: Bearer blt_…`, scoped to your org. See the [API reference](/api) for
+token details.
+
+### Cloudflare Access
+
+If your deployment sits behind a Cloudflare Access perimeter (a hosted / edge-fronted
+instance), a bare token gets bounced to the SSO login page. Supply a **service token**
+so the CLI's requests clear the edge:
+
+```bash
+breachlens scan \
+  --cf-access-client-id     "$CF_ACCESS_CLIENT_ID" \
+  --cf-access-client-secret "$CF_ACCESS_CLIENT_SECRET" \
+  --repo my-org/my-service --severity-gate HIGH
+```
+
+Leave these off for self-hosted deployments not behind Cloudflare Access.
+
+## Targets
+
+Pass **exactly one**:
 
 <CardGroup cols={2}>
-  <Card title="License CLI" icon="key" href="#license-cli">
-    Issue and apply license JWTs, generate the signed EULA bundle. Ships in `scripts/license/` in the install tarball.
+  <Card title="--repo owner/name" icon="code-branch">
+    Auto-onboards + scans a GitHub repo (needs the BreachLens GitHub App installed on that account).
   </Card>
-  <Card title="VS Code extension" icon="code" href="/ide/vscode">
-    Find-to-fix loop inside the editor. Squigglies, lightbulb fixes, side-by-side diff preview, one-click PR.
+  <Card title="--repo-id <id>" icon="folder-tree">
+    An existing BreachLens Repository — from its detail-page URL.
+  </Card>
+  <Card title="--container-id <id>" icon="box">
+    An existing Container image.
+  </Card>
+  <Card title="--domain-id <id>" icon="globe">
+    An existing Domain (DAST / pentest target).
   </Card>
 </CardGroup>
 
-### License CLI
+## Options
 
-The license-issuance pipeline lives at `scripts/license/issue-license.ts` and runs under `tsx`. It wraps the underlying `sign-license.ts` signer and produces a customer-ready bundle: a printable HTML cover + install guide + JWT + EULA, a raw `.jwt` file for env-var workflows, a standalone EULA HTML for legal review, and an append-only CSV ledger row.
+| Flag | Env | Default | Meaning |
+|---|---|---|---|
+| `--api-url` | `BREACHLENS_API_URL` | — | BreachLens base URL (required) |
+| `--token` | `BREACHLENS_API_TOKEN` | — | Scoped `blt_` token (required) |
+| `--cf-access-client-id` | `CF_ACCESS_CLIENT_ID` | — | Cloudflare Access service-token id (only if CF-Access-fronted) |
+| `--cf-access-client-secret` | `CF_ACCESS_CLIENT_SECRET` | — | Cloudflare Access service-token secret |
+| `--repo` | — | — | `owner/name` — auto-onboard + scan |
+| `--repo-id` / `--container-id` / `--domain-id` | — | — | Explicit BreachLens resource id |
+| `--scan-types` | — | server default | csv, e.g. `SAST,SCA,SECRET,IAC` |
+| `--severity-gate` | — | `none` | `CRITICAL` \| `HIGH` \| `MEDIUM` \| `LOW` \| `INFO` \| `none` |
+| `--commit` / `--branch` / `--pr` | — | — | CI context passed to auto-discovery |
+| `--sarif-out` | — | `breachlens-<id>.sarif` | Where to write the SARIF |
+| `--poll-interval` | — | `15` | Status poll interval (seconds) |
+| `--timeout` | — | `45` | Hard timeout (minutes) |
 
-Typical invocation:
+## Exit codes
+
+The exit code is the CI signal — the same severity buckets the GitHub Action and
+GitLab template use, so verdicts always agree.
+
+| Code | Meaning |
+|---|---|
+| `0` | Passed — no finding at or above the gate (or `--severity-gate none`) |
+| `1` | Gate breached, scan `FAILED`, timeout, or a usage / connection error |
+
+## In CI
+
+Because only the exit code matters, the same command works two ways — a bypassable
+pre-push hook (advisory) and a required CI check (enforcing):
+
+<CodeGroup>
+```yaml GitHub Actions
+- run: npx @breachlens/cli scan --repo ${{ github.repository }} --severity-gate HIGH
+  env:
+    BREACHLENS_API_URL: ${{ vars.BREACHLENS_API_URL }}
+    BREACHLENS_API_TOKEN: ${{ secrets.BREACHLENS_API_TOKEN }}
+```
+
+```yaml GitLab CI
+breachlens_scan:
+  image: node:20-alpine
+  script:
+    - npx @breachlens/cli scan --repo-id "$BREACHLENS_REPO_ID" --severity-gate HIGH
+```
+
+```bash pre-push hook (advisory)
+# .git/hooks/pre-push — bypassable with git push --no-verify
+npx @breachlens/cli scan --repo my-org/my-service --severity-gate none
+```
+</CodeGroup>
+
+---
+
+## License CLI
+
+Separate from the scan CLI, the license-issuance pipeline ships in the install bundle
+at `scripts/license/issue-license.ts` (runs under `tsx`). It produces a customer-ready
+bundle: a printable HTML cover + install guide + JWT + EULA, a raw `.jwt` for env-var
+workflows, a standalone EULA for legal review, and an append-only CSV ledger row.
 
 ```bash
 pnpm tsx scripts/license/issue-license.ts \
   --customer acme-corp \
   --customer-display-name "Acme Corp" \
   --contact-email security@acme.com \
-  --tier MID \
-  --days 365 \
-  --seats 50
+  --tier MID --days 365 --seats 50
 ```
 
-Output lands under `out/licenses/<customer>-<jti-short>/`:
-
-- `license-bundle.html` - open in a browser, print to PDF, send to the customer
-- `license.jwt` - the raw signed JWT for `LICENSE_KEY` env-var workflows
-- `eula.html` - standalone EULA for legal red-line
-- `out/licenses/ledger.csv` - append-only audit log of every issuance
-
 <Note>
-  The signing keypair must exist at `scripts/license/keys/` before you run the issuer. Generate it once per release line with `pnpm tsx scripts/license/generate-keypair.ts`. Treat the entire `out/licenses/` tree as confidential - it contains real signed licenses that unlock premium features.
+  The signing keypair must exist at `scripts/license/keys/` first — generate it once
+  per release line with `pnpm tsx scripts/license/generate-keypair.ts`. Treat
+  `out/licenses/` as confidential; it holds real signed licenses.
 </Note>
 
-Operators applying a license (rather than issuing one) have two paths, both documented inside the generated bundle:
-
-- **Web UI:** **Settings** -> **Operations** -> **License** card -> **Apply license**, paste the JWT.
-- **Env vars:** set `LICENSE_KEY` (and `LICENSE_PUBLIC_KEY` for custom release lines) on the api container, then restart.
-
-Verification is fully offline - the api uses the embedded ed25519 public key to check the JWT signature locally, with no network call to BreachLens infrastructure.
-
-## What's coming
-
-<Note>
-  A `breachlens` CLI covering scan, watch, finding, and fix verbs is on the roadmap. It will wrap the same REST endpoints used by the web UI and VS Code extension. If you want release notifications, email [hi@breachlens.app](mailto:hi@breachlens.app?subject=BreachLens%20CLI%20interest) and we will add you to the list.
-</Note>
-
-We are intentionally not publishing a flag reference for a CLI that does not exist yet. When it ships, this page becomes the canonical reference.
-
-## Until the CLI lands
-
-For scripting, CI integration, and custom dashboards, the REST API is the supported surface. Every action the web UI takes is a documented HTTP call, authenticated with a personal access token issued under **Settings** -> **API Tokens**. Most operator workflows - triggering scans, listing findings, applying license JWTs, generating fix PRs - are one `curl` away.
-
-See [API reference](/api) for endpoints, auth, and examples.
+Applying a license (rather than issuing one): **Settings → Operations → License → Apply
+license**, or set `LICENSE_KEY` on the api container and restart. Verification is fully
+offline via the embedded ed25519 public key — no call to BreachLens infrastructure.
