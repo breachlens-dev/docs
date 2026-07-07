@@ -1,0 +1,244 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "BreachLens API",
+    "version": "0.1.0",
+    "description": "Customer-facing scan API for BreachLens — trigger a scan, poll its status, and download SARIF. This is the same surface the `breachlens` CLI and the GitHub Action / GitLab templates drive.\n\n**Base URL:** your own BreachLens deployment (self-hosted or hosted edge). Set the `deployment` server variable in the playground to your host.\n\n**Auth:** a scoped API token minted in **Settings → API Tokens** (`scans:trigger` + `scans:read`), sent as `Authorization: Bearer blt_…`. Deployments fronted by Cloudflare Access ALSO require the `CF-Access-Client-Id` / `CF-Access-Client-Secret` service-token headers (optional fields on each request; leave blank for self-hosted).\n\n**Try-it note:** point the playground at a reachable deployment or a sandbox — a browser/proxy request cannot clear a Cloudflare Access perimeter without a service token, so do not target a CF-Access-fronted host with only a bearer token.\n\n**Flow:** trigger (one target) → poll `GET /api/scans/{scanId}` until `COMPLETED` → download `GET /api/scans/{scanId}/export.sarif`."
+  },
+  "servers": [
+    {
+      "url": "https://{deployment}",
+      "description": "Your BreachLens deployment",
+      "variables": {
+        "deployment": {
+          "default": "your-breachlens.example.com",
+          "description": "Host of your self-hosted or hosted BreachLens instance, no scheme or trailing slash (e.g. breachlens.acme.com)."
+        }
+      }
+    }
+  ],
+  "security": [{ "bearerAuth": [] }],
+  "tags": [{ "name": "Scans", "description": "Trigger scans, check status, export SARIF." }],
+  "paths": {
+    "/api/scans/from-github": {
+      "post": {
+        "operationId": "triggerScanFromGitHub",
+        "summary": "Trigger a scan by GitHub repo (auto-onboard)",
+        "description": "Auto-onboards the repository on first run — requires the BreachLens GitHub App installed on that account — then queues a scan. Requires the `scans:trigger` scope. Returns **503** if GitHub App auth is unavailable (App not installed / not authorized).",
+        "tags": ["Scans"],
+        "parameters": [
+          { "$ref": "#/components/parameters/CfAccessClientId" },
+          { "$ref": "#/components/parameters/CfAccessClientSecret" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["githubFullName"],
+                "properties": {
+                  "githubFullName": { "type": "string", "example": "my-org/payments-api", "description": "owner/name of the GitHub repository." },
+                  "commitSha": { "type": "string", "example": "a1b2c3d4", "description": "Commit SHA (CI metadata for auto-discovery)." },
+                  "branch": { "type": "string", "example": "main", "description": "Branch name (CI metadata)." },
+                  "prNumber": { "type": "integer", "example": 42, "description": "PR/MR number (CI metadata)." },
+                  "scanTypes": { "$ref": "#/components/schemas/ScanTypes" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": { "description": "Scan queued.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ScanTriggerResponse" } } } },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "503": { "description": "GitHub App auth unavailable — install/authorize the BreachLens GitHub App on the target account.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+        }
+      }
+    },
+    "/api/repos/{repoId}/scan": {
+      "post": {
+        "operationId": "triggerRepositoryScan",
+        "summary": "Trigger a scan on an existing Repository",
+        "description": "Queues a scan for a repository already known to BreachLens. Requires the `scans:trigger` scope plus DEVELOPER role or higher.",
+        "tags": ["Scans"],
+        "parameters": [
+          { "name": "repoId", "in": "path", "required": true, "schema": { "type": "string" }, "description": "BreachLens Repository ID (from its detail-page URL)." },
+          { "$ref": "#/components/parameters/CfAccessClientId" },
+          { "$ref": "#/components/parameters/CfAccessClientSecret" }
+        ],
+        "requestBody": { "required": false, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ResourceScanBody" } } } },
+        "responses": {
+          "202": { "description": "Scan queued.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ScanTriggerResponse" } } } },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/api/containers/{containerId}/scan": {
+      "post": {
+        "operationId": "triggerContainerScan",
+        "summary": "Trigger a scan on an existing Container",
+        "tags": ["Scans"],
+        "parameters": [
+          { "name": "containerId", "in": "path", "required": true, "schema": { "type": "string" }, "description": "BreachLens Container ID." },
+          { "$ref": "#/components/parameters/CfAccessClientId" },
+          { "$ref": "#/components/parameters/CfAccessClientSecret" }
+        ],
+        "requestBody": { "required": false, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ResourceScanBody" } } } },
+        "responses": {
+          "202": { "description": "Scan queued.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ScanTriggerResponse" } } } },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/api/domains/{domainId}/scan": {
+      "post": {
+        "operationId": "triggerDomainScan",
+        "summary": "Trigger a scan on an existing Domain (DAST / pentest target)",
+        "tags": ["Scans"],
+        "parameters": [
+          { "name": "domainId", "in": "path", "required": true, "schema": { "type": "string" }, "description": "BreachLens Domain ID." },
+          { "$ref": "#/components/parameters/CfAccessClientId" },
+          { "$ref": "#/components/parameters/CfAccessClientSecret" }
+        ],
+        "requestBody": { "required": false, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ResourceScanBody" } } } },
+        "responses": {
+          "202": { "description": "Scan queued.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ScanTriggerResponse" } } } },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/api/scans/{scanId}": {
+      "get": {
+        "operationId": "getScanStatus",
+        "summary": "Get scan status",
+        "description": "Poll until `status` is a terminal state (`COMPLETED`, `FAILED`, or `CANCELLED`). The CLI polls every `--poll-interval` seconds. Active scans also include `currentPhase` and `currentPhasePct`. Requires the `scans:read` scope.",
+        "tags": ["Scans"],
+        "parameters": [
+          { "name": "scanId", "in": "path", "required": true, "schema": { "type": "string" }, "description": "Scan job ID returned by a trigger call." },
+          { "$ref": "#/components/parameters/CfAccessClientId" },
+          { "$ref": "#/components/parameters/CfAccessClientSecret" }
+        ],
+        "responses": {
+          "200": { "description": "Current scan state.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ScanStatusResponse" } } } },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/api/scans/{scanId}/export.sarif": {
+      "get": {
+        "operationId": "exportScanSarif",
+        "summary": "Download scan results as SARIF 2.1.0",
+        "description": "Returns a SARIF log for a COMPLETED scan — the standard format for GitHub Code Scanning, GitLab, Bitbucket, or Azure DevOps. Each result carries its BreachLens severity at `result.properties.severity` (CRITICAL | HIGH | MEDIUM | LOW | INFO) — the field the CLI counts for its `--severity-gate`. Requires the `scans:read` scope.",
+        "tags": ["Scans"],
+        "parameters": [
+          { "name": "scanId", "in": "path", "required": true, "schema": { "type": "string" }, "description": "Scan job ID (must be COMPLETED)." },
+          { "$ref": "#/components/parameters/CfAccessClientId" },
+          { "$ref": "#/components/parameters/CfAccessClientSecret" }
+        ],
+        "responses": {
+          "200": { "description": "SARIF 2.1.0 log.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SarifLog" } } } },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "description": "Scan not found or results not ready.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "blt_ token",
+        "description": "Scoped API token from Settings → API Tokens (scopes: scans:trigger, scans:read)."
+      }
+    },
+    "parameters": {
+      "CfAccessClientId": {
+        "name": "CF-Access-Client-Id",
+        "in": "header",
+        "required": false,
+        "schema": { "type": "string" },
+        "description": "Cloudflare Access service-token client id (ends in .access). Only for CF-Access-fronted deployments; leave blank for self-hosted."
+      },
+      "CfAccessClientSecret": {
+        "name": "CF-Access-Client-Secret",
+        "in": "header",
+        "required": false,
+        "schema": { "type": "string" },
+        "description": "Cloudflare Access service-token secret. Pair it with CF-Access-Client-Id."
+      }
+    },
+    "responses": {
+      "Unauthorized": { "description": "Missing, invalid, or expired API token.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" }, "example": { "error": "Invalid or expired API token" } } } },
+      "Forbidden": { "description": "Token missing a required scope, or role-gate failure.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" }, "example": { "error": "API token missing required scope", "required": "scans:trigger", "granted": ["scans:read"] } } } },
+      "NotFound": { "description": "Resource not found in your active org.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" }, "example": { "error": "Scan job not found" } } } }
+    },
+    "schemas": {
+      "ScanTypes": {
+        "type": "array",
+        "items": { "type": "string" },
+        "example": ["SAST", "SCA", "SECRET", "IAC"],
+        "description": "Scan tiers to run. Omit for the server default (`SAST, SCA, SECRET, IAC` for repositories). Valid values depend on target type."
+      },
+      "ResourceScanBody": {
+        "type": "object",
+        "properties": { "scanTypes": { "$ref": "#/components/schemas/ScanTypes" } },
+        "description": "Optional body. Omit to run the server default scan set for the target."
+      },
+      "ScanTriggerResponse": {
+        "type": "object",
+        "description": "The scan id is returned as `scanJobId` (aliased as `id` on some endpoints). `repository` is present only for from-github auto-discovery.",
+        "properties": {
+          "scanJobId": { "type": "string", "example": "cmrasmw4702sdstu9j4iq1x55" },
+          "id": { "type": "string", "description": "Alias for scanJobId on some endpoints." },
+          "repository": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "fullName": { "type": "string", "example": "my-org/payments-api" },
+              "newlyCreated": { "type": "boolean", "description": "true when this call onboarded the repo for the first time." }
+            }
+          }
+        },
+        "additionalProperties": true
+      },
+      "ScanStatusResponse": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "status": { "type": "string", "enum": ["PENDING", "RUNNING", "COMPLETED", "FAILED", "CANCELLED"], "description": "Terminal states are COMPLETED, FAILED, and CANCELLED." },
+          "scanTypes": { "$ref": "#/components/schemas/ScanTypes" },
+          "currentPhase": { "type": "string", "description": "Present while RUNNING." },
+          "currentPhasePct": { "type": "integer", "description": "0–100, present while RUNNING." }
+        },
+        "additionalProperties": true
+      },
+      "SarifLog": {
+        "type": "object",
+        "description": "SARIF 2.1.0 static-analysis results log. Findings live under runs[].results[]; BreachLens severity is at result.properties.severity.",
+        "properties": {
+          "version": { "type": "string", "example": "2.1.0" },
+          "runs": { "type": "array", "items": { "type": "object", "additionalProperties": true } }
+        },
+        "additionalProperties": true
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": { "type": "string" },
+          "code": { "type": "string" },
+          "message": { "type": "string" }
+        },
+        "additionalProperties": true
+      }
+    }
+  }
+}

@@ -37,6 +37,10 @@
           "mcp",
           "api"
         ]
+      },
+      {
+        "group": "API playground",
+        "openapi": "api-reference/openapi.json"
       }
     ],
     "global": {
