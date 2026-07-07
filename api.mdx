@@ -213,8 +213,10 @@ Every request gets an `x-request-id` response header; include it when contacting
 
 ## OpenAPI spec
 
+A machine-readable **OpenAPI 3.1** spec covers the scan endpoints — trigger, status, and SARIF export. Grab it at [`/api-reference/openapi.json`](/api-reference/openapi.json), or use the interactive **API playground** in the sidebar to send real requests from the docs — no Postman or curl needed.
+
 <Note>
-  A machine-readable OpenAPI 3.1 spec for the BreachLens REST API is on the roadmap. For now, this page is the canonical reference - the routes documented here are stable, and new endpoints are additive.
+  In the playground, set the **base URL** to your own deployment and paste a `blt_` token. Don't target a Cloudflare-Access-fronted host (e.g. the hosted demo) with only a bearer token — a browser request can't clear that edge without a service token. The narrative examples on this page remain the canonical reference; routes are stable and new endpoints are additive.
 </Note>
 
 ## Next steps
