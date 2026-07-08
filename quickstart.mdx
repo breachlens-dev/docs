@@ -6,7 +6,7 @@ description: "From `docker compose up` to a working scan in under 10 minutes."
 This walks you through getting BreachLens running on your own machine, connecting your first GitHub repository, and seeing scan findings show up in the dashboard.
 
 <Tip>
-  Want to see it running first without installing? The live demo at [aurora.breachlens.dev](https://aurora.breachlens.dev) has DVWA and WebGoat pre-connected. Sign in with GitHub and explore.
+  Want to see it in action before installing? These docs ship an interactive [API playground](/api) wired to a public sandbox — hit **Send** on any endpoint and get real, sanitized findings back, no signup. For a walkthrough of the running app, [ask us for a demo](mailto:hi@breachlens.app?subject=BreachLens%20demo).
 </Tip>
 
 ## Prerequisites
@@ -60,10 +60,39 @@ Before you begin, you must have:
     ```
   </Step>
 
-  <Step title="Open the web UI">
-    Visit [https://localhost:5173](https://localhost:5173). You'll see the first-login wizard. Accept the self-signed cert warning — BreachLens uses an internal CA in dev mode.
+  <Step title="Create your owner account">
+    On first boot — when no account exists yet — the api prints a **one-time setup token** to its logs. Grab it:
 
-    Sign in with GitHub, then accept the auto-created PERSONAL organization.
+    ```bash
+    docker compose logs api | grep -A1 blnx_setup_
+    ```
+
+    You'll see a banner like:
+
+    ```
+    ╔══════════════════════════════════════════════════════════════════════════╗
+    ║   BreachLens · first-boot setup                                          ║
+    ║   Open the web UI and visit /setup, then paste:                          ║
+    ║   blnx_setup_9f2c…                                                        ║
+    ║   Expires: 2026-07-09T12:00:00.000Z                                      ║
+    ╚══════════════════════════════════════════════════════════════════════════╝
+    ```
+
+    Open [https://localhost:5173/setup](https://localhost:5173/setup), paste the token, and fill in your name, work email, a strong password, your **organization name**, and your **primary email domain** (e.g. `acme.com`). Submitting creates the first **owner** account — a break-glass admin on a fresh team workspace.
+
+    <Note>
+      **Accept the certificate on both ports.** With the default self-signed cert, your browser has to trust **both** `https://localhost:5173` (web) **and** `https://localhost:3000/health` (api) — the setup form posts to the api on port `3000`, and an untrusted cert there makes the submit fail silently. Open each URL once, accept the warning, then return to `/setup`.
+    </Note>
+
+    <Note>
+      The setup token works **once** and expires after **24 hours**. To print a fresh one, restart the api: `docker compose restart api`. Once the first account exists, `/setup` closes permanently — there's no second break-glass admin by design.
+    </Note>
+  </Step>
+
+  <Step title="Enroll multi-factor authentication">
+    Immediately after setup, BreachLens requires the owner to enroll MFA — an authenticator app (TOTP) or a passkey. Complete the prompt and you'll land on the dashboard.
+
+    From here on you sign in with the email + password you just set (plus MFA). You can add SSO and invite teammates later from **Settings → Authentication**.
   </Step>
 </Steps>
 
@@ -71,7 +100,7 @@ Before you begin, you must have:
 
 <Steps>
   <Step title="Install the BreachLens GitHub App">
-    From the onboarding wizard, click **Connect GitHub**. You'll be redirected to install the BreachLens GitHub App on your org or personal account. It requests **read-only** access to repository contents and metadata, plus write access to checks and pull requests (for PR gating and auto-fix PRs).
+    From the dashboard, open **Repositories → Add repository** and choose **From GitHub**. You'll be prompted to install the BreachLens GitHub App on the org or account that owns the repos you want to scan. It requests **read-only** access to repository contents and metadata, plus write access to checks and pull requests (for PR gating and auto-fix PRs).
 
     When GitHub asks which repositories to grant, you choose the scope:
 
