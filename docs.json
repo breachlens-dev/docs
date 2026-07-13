@@ -32,6 +32,13 @@
         ]
       },
       {
+        "group": "Pipeline & monitoring",
+        "pages": [
+          "pipeline/cicd",
+          "pipeline/continuous-monitoring"
+        ]
+      },
+      {
         "group": "IDE",
         "pages": [
           "ide/vscode"

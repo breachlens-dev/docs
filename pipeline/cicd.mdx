@@ -1,0 +1,121 @@
+---
+title: "CI/CD pipeline"
+description: "Where BreachLens plugs into each stage of your pipeline — from the editor to runtime — and exactly what to configure at each one."
+---
+
+BreachLens plugs into every stage of a delivery pipeline — from the moment a developer types a line of code, through PR review, build, deploy, and into runtime — with one engine, one correlation graph, and one auto-fix loop. This page maps each stage to the thing you configure there.
+
+<Note>
+  The differentiator isn't "runs security in the pipeline" — every vendor does that. It's that the finding a developer sees as a red squiggly in their editor is the **same** finding that gates the PR, the **same** finding the dashboard ranks, and the **same** finding auto-fix closes. One source of truth, correlated across every stage — not seven tools with seven dashboards.
+</Note>
+
+## The map
+
+```
+ IDE            COMMIT / PR      BUILD             TEST             DEPLOY / RUN
+ shift-left     SAST + secrets   SCA · IaC · SBOM  DAST · Pentest   Runtime · Posture
+   │              │                │                 │                │
+   ▼              ▼                ▼                 ▼                ▼
+ Squigglies +   PR check runs +  Dependency +      Outside-in +     Live detection +
+ working-copy   auto-fix PRs     supply-chain      Proof-of-        continuous posture
+ scan                            scanning          Exploit          + attack-paths
+```
+
+Every stage feeds the **same correlation engine**, so a commit-stage code finding can be chained to a test-stage exploit proof and a deploy-stage cloud misconfiguration as one scored attack path.
+
+## Where you configure each stage
+
+| Stage | What runs | Where you set it up |
+|---|---|---|
+| **IDE** | Inline findings, scan-your-working-copy before push | Install the [VS Code extension](/ide/vscode) (also Cursor / Windsurf), connect it to your deployment |
+| **Commit / PR** | SAST + secret detection, PR check runs, auto-fix PRs | Install the [GitHub App](/scanning/repositories) with Checks + Pull requests permissions |
+| **CI (any stage)** | Any tier, gate the build on severity | Add the [`breachlens` CLI](/cli) to your pipeline — GitHub Actions, GitLab CI, or any runner |
+| **Build** | SCA, IaC, container CVEs, signed SBOM | Run the CLI in the build job, or let PR checks cover it |
+| **Test** | DAST + autonomous pentest with Proof-of-Exploit | Add a [Domain target](mailto:hi@breachlens.app?subject=BreachLens%20DAST%20setup) pointed at your staging URL |
+| **Deploy / Run** | Runtime sensors, continuous posture, attack-paths | See [Continuous monitoring](/pipeline/continuous-monitoring) |
+
+## Stage by stage
+
+### IDE — shift-left
+
+Security inside the editor, before code is committed. The BreachLens VS Code extension is a **thin client** — no scanners bundled — so what the developer sees is identical to the dashboard and the PR. The editor and the platform never disagree.
+
+- Inline squigglies on the vulnerable line, coloured by real severity
+- **Scan your working copy** — an on-demand scan of uncommitted changes (code + secrets + IaC) before you push
+- Lightbulb actions: open in BreachLens, preview auto-fix as a side-by-side diff, apply it
+- Opt-in scan-on-save for mapped repos
+
+<Card title="Set up the IDE extension" icon="code" href="/ide/vscode">
+  Install, connect, and scan without leaving the editor.
+</Card>
+
+### Commit / PR — the static gate
+
+When code lands, BreachLens runs SAST + secret detection and reports on the pull request:
+
+- **PR / MR check runs** — green/red status with a clickable deep-link
+- **Inline PR comments** — per-finding annotations on the diff, with a one-click **Commit suggestion** anchored to the exact hunk
+- **Auto-fix PR** — opens a separate PR with an AI-generated patch; merging it auto-resolves the original finding
+
+This needs the GitHub App's **Checks** and **Pull requests** permissions — see the [permission matrix](/scanning/repositories#permissions-in-plain-terms).
+
+### CI — gate the build from any runner
+
+The [`breachlens` CLI](/cli) is a headless client that triggers a scan, waits, downloads the SARIF, and turns the result into an **exit code** — `0` passes, `1` fails the build. The same command drops into a pre-push hook (advisory) or a required CI check (enforcing):
+
+<CodeGroup>
+```yaml GitHub Actions
+- run: npx @breachlens/cli scan --repo ${{ github.repository }} --severity-gate HIGH
+  env:
+    BREACHLENS_API_URL: ${{ vars.BREACHLENS_API_URL }}
+    BREACHLENS_API_TOKEN: ${{ secrets.BREACHLENS_API_TOKEN }}
+```
+
+```yaml GitLab CI
+breachlens_scan:
+  image: node:20-alpine
+  script:
+    - npx @breachlens/cli scan --repo-id "$BREACHLENS_REPO_ID" --severity-gate HIGH
+```
+</CodeGroup>
+
+<Tip>
+  Start with `--severity-gate none` (report-only) so you see findings without breaking builds, then tighten to `HIGH` or `CRITICAL` once the team has triaged the baseline.
+</Tip>
+
+### Build — dependencies, supply chain, IaC
+
+The build stage pulls in third-party code and ships an artifact. BreachLens secures both:
+
+- **SCA** — known-vulnerability + license analysis across common package ecosystems, with **function-level reachability** so you patch what's actually called first
+- **IaC** — Terraform / Kubernetes / CloudFormation / Helm misconfiguration analysis
+- **Container image scanning** — CVE detection on built images, with reachability tiering
+- **Signed SBOM** — CycloneDX / SPDX bill of materials, cosign-compatible for procurement evidence
+
+### Test — dynamic testing and exploit proof
+
+Once built, the running app is tested from the outside in — the noisiest stage of the pipeline, and where BreachLens's strongest differentiator lives:
+
+- **DAST** — outside-in active scanning (XSS, injection, CSRF, XXE, auth/session flaws), with authenticated form-login and recorded-session modes
+- **Autonomous pentest** — multi-tool exploit orchestration that goes beyond detection to exploitation
+- **Proof-of-Exploit** — a `CONFIRMED` finding ships a reproducible `curl` + wire-level Request/Response, and for select classes an exploit-replay video. A confirmed finding is never a "maybe."
+
+### Deploy / Run — runtime and posture
+
+Once live, BreachLens keeps watching — runtime sensors, continuous posture, and cross-tier attack paths — and closes the loop with auto-fix PRs, ticketing, and alerts. That's its own topic:
+
+<Card title="Continuous monitoring" icon="repeat" href="/pipeline/continuous-monitoring">
+  Event-driven re-scans, scheduled posture, and 24/7 runtime detection — the always-on half of the pipeline.
+</Card>
+
+## What BreachLens deliberately does not do
+
+Honest scoping matters in a security evaluation. Three capabilities from the classic toolset are **not** in BreachLens today — deliberate architectural boundaries, not oversights:
+
+| Capability | Why it's out of scope |
+|---|---|
+| **IAST** (in-app instrumentation agent) | Requires an agent inside the app process. BreachLens is external-scan + thin-client IDE; DAST + autonomous pentest cover the dynamic-testing need with reproducible Proof-of-Exploit. |
+| **RASP** (in-app runtime blocking) | Also runs inside the app process. BreachLens's deploy-stage coverage is **detection** (host / workload sensors), not in-app self-protection. |
+| **Just-in-time privileged access** | BreachLens has role / capability / scope-based access control, but not time-boxed "grant for 1 hour" elevation. |
+
+For the self-hosted, air-gappable, regulated lane BreachLens leads with, the runtime-detection tier and external-scan model cover the practical need.
