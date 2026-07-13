@@ -1,0 +1,142 @@
+---
+title: "Continuous monitoring"
+description: "Keep security always-on after the pipeline runs — event-driven re-scans, scheduled posture, and 24/7 runtime detection — and where you configure each."
+---
+
+A scan is a snapshot. Security drifts between snapshots: a dependency gets a new CVE, someone disables branch protection, a cloud bucket goes public, a workload starts behaving oddly. **Continuous monitoring** is how BreachLens keeps watching after the pipeline has run.
+
+There are three modes, and most teams use all three. They differ in *what triggers the next look*:
+
+<CardGroup cols={3}>
+  <Card title="Event-driven" icon="bolt">
+    Re-scan the moment code changes — every push and pull request.
+  </Card>
+  <Card title="Scheduled" icon="clock">
+    Re-scan on a cadence you set — nightly posture, weekly container CVEs.
+  </Card>
+  <Card title="Continuous" icon="wave-pulse">
+    Always-on runtime sensors streaming host and workload events.
+  </Card>
+</CardGroup>
+
+## Event-driven — re-scan on change
+
+Once the [GitHub App](/scanning/repositories) is installed, BreachLens listens to your repositories and re-scans automatically:
+
+- **Push / pull request** → a fresh code scan runs and posts its result as a PR check.
+- **Merge** → findings that the merged code fixed are **auto-resolved**.
+
+Nothing to schedule — the trigger is the developer's own workflow. This keeps code findings current with zero cadence to tune.
+
+## Scheduled — re-scan on a cadence
+
+Code changes are event-driven, but **posture, container images, and live web apps drift on their own** — a base image gets a new CVE overnight, an admin loosens an org policy. For those, you re-scan on a schedule.
+
+BreachLens provides the **trigger** (the [`breachlens` CLI](/cli) and the scan API); you provide the **cadence**, using the scheduler you already run. Scans fired this way are recorded with a `SCHEDULED` trigger type, so you can tell an operator re-scan apart from a PR scan in the history.
+
+<Note>
+  There's no cron to configure *inside* BreachLens today — the schedule lives in your CI or cluster, which keeps it in the same place as the rest of your automation and works in air-gapped installs. Want native in-app scheduling? [Tell us](mailto:hi@breachlens.app?subject=BreachLens%20scheduled%20scans) — it helps us prioritize.
+</Note>
+
+Pick whichever scheduler fits your environment:
+
+<CodeGroup>
+```yaml GitHub Actions (nightly)
+# .github/workflows/breachlens-nightly.yml
+on:
+  schedule:
+    - cron: "0 2 * * *"   # 02:00 UTC daily
+jobs:
+  posture:
+    runs-on: ubuntu-latest
+    steps:
+      - run: npx @breachlens/cli scan --repo ${{ github.repository }} --severity-gate none
+        env:
+          BREACHLENS_API_URL: ${{ vars.BREACHLENS_API_URL }}
+          BREACHLENS_API_TOKEN: ${{ secrets.BREACHLENS_API_TOKEN }}
+```
+
+```yaml GitLab (scheduled pipeline)
+# Create a Pipeline Schedule in the UI (CI/CD → Schedules), then:
+breachlens_nightly:
+  image: node:20-alpine
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+  script:
+    - npx @breachlens/cli scan --container-id "$IMAGE_ID" --severity-gate none
+```
+
+```yaml Kubernetes CronJob (self-hosted)
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: breachlens-nightly-posture
+spec:
+  schedule: "0 2 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: scan
+              image: node:20-alpine
+              command: ["npx", "@breachlens/cli", "scan",
+                        "--domain-id", "$(DOMAIN_ID)", "--severity-gate", "none"]
+              envFrom:
+                - secretRef: { name: breachlens-cli }
+```
+</CodeGroup>
+
+<Tip>
+  Use `--severity-gate none` for scheduled runs — a nightly job should **report** drift, not fail on it. Route the alert (below) instead of a red build.
+</Tip>
+
+### Posture is the flagship scheduled check
+
+[GitHub posture](/scanning/github-posture) and cloud posture are the clearest case for scheduling. A repo that had branch protection yesterday can lose it today; a cloud account that was compliant last week can drift. Re-running posture nightly turns a one-time audit into an **ongoing control** — and because BreachLens keeps *unevaluated* separate from *failing*, a re-scan also re-checks coverage, not just violations.
+
+### See what changed between runs
+
+Every scan in a target's **Scans** tab has a **⇆ Diff** button. It compares a run to the previous one of the same type and shows exactly what's **new** and what's **fixed** since — so a scheduled re-scan answers "what drifted overnight?" at a glance, not "here are all 200 findings again."
+
+## Continuous — runtime detection
+
+Code and config are scanned; the running system is **watched**. BreachLens's runtime tier streams events continuously rather than on a cadence:
+
+- **Runtime sensors** — host + workload agents emit syscall, file-integrity, command-exec, network, and vulnerability events into the same correlation graph.
+- **Egress verification** — network flow + TLS events are aggregated into hourly summaries, the procurement-grade "what did this actually talk to" record.
+
+These feed the same engine as every scan tier, so a runtime alert on a workload can chain to the code finding and cloud misconfiguration behind it as one scored attack path.
+
+<Card title="Set up runtime sensors" icon="server" href="mailto:hi@breachlens.app?subject=BreachLens%20runtime%20sensors">
+  Deploy host / workload sensors and wire them to your BreachLens install.
+</Card>
+
+## Act on the signal
+
+Continuous monitoring is only useful if the right person hears about it. BreachLens closes the loop:
+
+| Output | Use it for |
+|---|---|
+| **Auto-fix PR / MR** | Code + dependency drift — ship the patch, merge auto-resolves |
+| **Slack / Teams / email / webhook** | Route a new Critical/High or a posture regression to the owning team |
+| **Native + Jira tickets** | Track remediation in the tool the team already lives in |
+| **Cross-tier attack-paths** | Focus on the chains that actually reach something, each with an AI verdict |
+
+## Putting it together
+
+<Steps>
+  <Step title="Event-driven for code">
+    Install the GitHub App — push/PR scans and merge auto-resolve come for free.
+  </Step>
+  <Step title="Schedule the drifters">
+    Add a nightly CI job or CronJob that re-runs posture (and container / DAST where relevant) with `--severity-gate none`.
+  </Step>
+  <Step title="Stream the runtime">
+    Deploy runtime sensors so live behavior feeds the same correlation graph.
+  </Step>
+  <Step title="Route the alerts">
+    Wire Slack / Teams / Jira so a new confirmed finding or posture regression reaches an owner — not just a dashboard nobody's watching.
+  </Step>
+</Steps>

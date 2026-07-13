@@ -73,13 +73,17 @@ The account detail page surfaces posture three ways:
   Failing and unevaluated are counted separately everywhere — in tiles, per-repo chips, and the "hottest checks" list. A repo with 12 failing checks and 4 unevaluated reads exactly that, never a blended number. This is deliberate: an *unknown* check is a coverage gap to close, not a violation to fix.
 </Note>
 
+## Keep it honest over time
+
+Posture drifts — a repo that had branch protection yesterday can lose it today. Re-run posture on a schedule to turn this one-time audit into an ongoing control; the **⇆ Diff** on each scan shows exactly what changed since the last run.
+
 ## Next steps
 
 <CardGroup cols={2}>
+  <Card title="Monitor posture continuously" icon="repeat" href="/pipeline/continuous-monitoring">
+    Schedule nightly posture re-scans and route drift to Slack / Teams / Jira.
+  </Card>
   <Card title="Scan a repository" icon="code" href="/scanning/repositories">
     The code side — SAST, SCA, secrets, and IaC — plus the full GitHub App permission matrix.
-  </Card>
-  <Card title="Compliance reporting" icon="clipboard-check" href="mailto:hi@breachlens.app?subject=BreachLens%20compliance%20reporting">
-    Roll posture and code findings into framework-mapped, exportable evidence packs.
   </Card>
 </CardGroup>
