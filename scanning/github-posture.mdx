@@ -1,0 +1,85 @@
+---
+title: "Scan GitHub posture"
+description: "Audit the account's own configuration — branch protection, required reviewers, Dependabot alerts — across every repo, and understand the one extra permission it needs."
+---
+
+Code scanning reads what's *in* your repos. **Posture scanning** reads how your GitHub account itself is *configured* — the guardrails around the code:
+
+- Branch protection on default branches
+- Required reviewers before merge
+- Dependabot vulnerability alerts enabled
+- Delete-branch-on-merge, signed commits, and similar hygiene
+- Organization-level settings (2FA enforcement, base member permissions)
+
+It runs across **every repository the App installation can see — public and private** — and rolls the results up per account so you can see which repos are missing which guardrails.
+
+<Note>
+  Posture reuses the same [GitHub App installation](/scanning/repositories#add-a-repository) as code scanning. You don't connect anything new — you grant one additional permission.
+</Note>
+
+## The one extra permission: `Administration: Read`
+
+Most posture checks read repository **configuration**, which lives behind GitHub's `Administration` permission — not `Contents`. Without it, BreachLens can enumerate your repos but can't read their branch-protection or Dependabot settings.
+
+Crucially, when a check can't be read, BreachLens does **not** report it as passing. It reports it as **Unevaluated** — because *unknown is not the same as clean*. A repo you couldn't fully check should never look green.
+
+<CardGroup cols={2}>
+  <Card title="With Administration: Read" icon="circle-check">
+    Every posture check evaluates to Pass or Fail. Coverage is complete; the account's real hygiene is visible.
+  </Card>
+  <Card title="Without it" icon="circle-question">
+    Repos still appear, but config-dependent checks show as **Unevaluated** with a coverage banner telling you exactly what you're not seeing and why.
+  </Card>
+</CardGroup>
+
+<Steps>
+  <Step title="Grant the permission">
+    On GitHub, open the BreachLens App installation → **Permissions** → set **Administration** to **Read-only**, then save.
+  </Step>
+  <Step title="Accept it on each installation">
+    Adding a permission to a published App marks it **pending** on every existing installation. An org owner must click **Review request → Accept** on each one before it takes effect — GitHub does not apply it retroactively on its own.
+  </Step>
+  <Step title="Re-run the scan">
+    Trigger a fresh posture scan (below). Previously **Unevaluated** checks now resolve to Pass or Fail, and the coverage banner clears.
+  </Step>
+</Steps>
+
+<Warning>
+  `Administration: Read` is an admin-level grant, so procurement may want to review it. It is **read-only** — it lets BreachLens *read* protection rules and org settings, never change them. Organization-wide checks (member 2FA, base permissions) additionally need the App installed at the **org** level, not just on a personal account.
+</Warning>
+
+## Run a posture scan
+
+<Steps>
+  <Step title="Open the account">
+    Go to **GitHub Accounts** and click the account (or org) you want to audit.
+  </Step>
+  <Step title="Run the scan">
+    Click **Run scan** and choose the **GitHub posture** tier — or start it from the account's **Scans** tab. A posture scan is fast; it inspects configuration, not code.
+  </Step>
+</Steps>
+
+## Read the results
+
+The account detail page surfaces posture three ways:
+
+| Panel | Tells you |
+|---|---|
+| **Overview → Coverage** | How many repos and checks came back **Unevaluated**, and the fix (grant `Administration: Read`). Hidden entirely once coverage is complete. |
+| **Linked repositories** | Per-repo **failing** vs **unevaluated** counts, kept separate so a clean-looking repo can't hide a gap. Click a repo to jump to its posture findings, pre-filtered. |
+| **Findings** | Every Fail as a finding, with severity, the rule that fired, and remediation. |
+
+<Note>
+  Failing and unevaluated are counted separately everywhere — in tiles, per-repo chips, and the "hottest checks" list. A repo with 12 failing checks and 4 unevaluated reads exactly that, never a blended number. This is deliberate: an *unknown* check is a coverage gap to close, not a violation to fix.
+</Note>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Scan a repository" icon="code" href="/scanning/repositories">
+    The code side — SAST, SCA, secrets, and IaC — plus the full GitHub App permission matrix.
+  </Card>
+  <Card title="Compliance reporting" icon="clipboard-check" href="mailto:hi@breachlens.app?subject=BreachLens%20compliance%20reporting">
+    Roll posture and code findings into framework-mapped, exportable evidence packs.
+  </Card>
+</CardGroup>
