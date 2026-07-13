@@ -25,6 +25,13 @@
         ]
       },
       {
+        "group": "Scanning",
+        "pages": [
+          "scanning/repositories",
+          "scanning/github-posture"
+        ]
+      },
+      {
         "group": "IDE",
         "pages": [
           "ide/vscode"

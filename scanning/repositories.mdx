@@ -1,0 +1,110 @@
+---
+title: "Scan a repository"
+description: "Connect a GitHub repo, understand exactly what the GitHub App can and can't do, and run your first code scan."
+---
+
+Scanning a repository is two independent steps: **connect the repo** so BreachLens can read it, then **run a scan**. Connecting never scans anything on its own — scanning stays opt-in, one repo at a time.
+
+<Note>
+  How users **sign in** to BreachLens and how BreachLens **reaches your code** are separate questions with separate credentials. This page is about the second one. For the first — including GitHub Enterprise Server and the code-host-as-IdP anti-pattern — see [Authentication](/auth).
+</Note>
+
+## Permissions, in plain terms
+
+BreachLens reads your code through a **GitHub App installation**, not through your login. The two grants are unrelated:
+
+| Grant | Scope | Purpose |
+|---|---|---|
+| **GitHub OAuth login** | `user:email` only | Identifies *you* at sign-in. Never touches repositories. Disabled by default on self-hosted installs. |
+| **GitHub App installation** | The permissions below | How BreachLens reads code and posts results. Install it once on the org or account that owns your repos. |
+
+When you install the App, GitHub shows you exactly what it asks for. Here's what each permission is actually used for:
+
+| App permission | Access | What it unlocks | Required? |
+|---|---|---|---|
+| **Metadata** | Read | List the repositories the install can see (GitHub mandates this for every App). | Always |
+| **Contents** | Read | Clone and scan code — SAST, dependency (SCA), secrets, and IaC. | For code scanning |
+| **Contents** | Read **& write** | Push the fix branch when you click **Generate auto-fix PR**. | Only for auto-fix |
+| **Pull requests** | Read & write | Open auto-fix PRs, and gate a PR on the findings it introduces. | Only for PR gating / auto-fix |
+| **Checks** | Read & write | Post scan results as a Check Run on commits and PRs. | Only for PR gating |
+| **Administration** | Read | Read repository configuration for [GitHub posture](/scanning/github-posture) (branch protection, required reviewers, etc.). | Only for posture |
+
+<Tip>
+  **Least privilege works.** `Contents: Read` + `Metadata: Read` is enough to run every code-scan tier. Add write permissions only when you want auto-fix PRs or PR gating, and add `Administration: Read` only when you want posture checks. Each capability degrades gracefully — a missing permission disables that feature, it never blocks the rest.
+</Tip>
+
+## Add a repository
+
+Open **Repositories → Add repository** and pick the path that fits how the repo is hosted.
+
+<Tabs>
+  <Tab title="From GitHub (App)">
+    The one-click path for GitHub.com. Choose **From GitHub** and install the BreachLens GitHub App on the org or account that owns the repos.
+
+    When GitHub asks which repositories to grant, you set the scope:
+
+    <CardGroup cols={2}>
+      <Card title="All repositories" icon="circle-check">
+        New repos appear in BreachLens automatically — connect once, never return to GitHub. Read-only by default. Best for most teams.
+      </Card>
+      <Card title="Only select repositories" icon="lock">
+        You hand-pick what the App can see. To scan a new repo later, add it to the installation from the **Manage on GitHub** link in the Add-repository modal.
+      </Card>
+    </CardGroup>
+
+    <Note>
+      Granting access is not scanning. The scope only controls which repos appear in the picker — nothing runs until you add a repo here and start a scan.
+    </Note>
+  </Tab>
+
+  <Tab title="By URL (PAT)">
+    For **GitHub Enterprise Server**, GitLab, or when you want to avoid an org-wide App install. Open the **By URL** tab, paste the clone URL, and provide a Personal Access Token scoped to just that repo (`repo` / `read_repository`).
+
+    The PAT is encrypted at rest with AES-256-GCM before storage. This path runs code-scan tiers only — PR check runs and auto-fix PRs need the App.
+  </Tab>
+
+  <Tab title="From CI (CLI)">
+    In a pipeline, the [`breachlens` CLI](/cli) triggers a scan without the dashboard:
+
+    ```bash
+    breachlens scan --repo my-org/my-service --severity-gate HIGH
+    ```
+
+    Repo discovery via `--repo <owner>/<name>` is gated on the GitHub App installation covering that account. For a repo the App can't see, scan it by its BreachLens id instead (`--repo-id <id>`) or add it from the dashboard first. See the [CLI reference](/cli) for CI pipeline snippets.
+  </Tab>
+</Tabs>
+
+## Run a scan
+
+<Steps>
+  <Step title="Open the repository">
+    Go to **Repositories** and click a connected repo to open its detail page.
+  </Step>
+
+  <Step title="Start the scan">
+    Click **Run scan** in the top-right. The default tier runs **SAST + SCA + Secrets + IaC** in parallel — expect findings within 30–90 seconds for a typical repo.
+  </Step>
+
+  <Step title="Watch it, or walk away">
+    A live progress panel shows phase, elapsed time, and findings as they land. Need to stop a run? Every running or pending scan has a **Cancel** control — on the progress panel, on the global **Scans** page, and on each repo's **Scans** tab. Cancelling releases the job cleanly and marks it cancelled; you can re-run any time.
+  </Step>
+</Steps>
+
+## Gate pull requests (optional)
+
+With the App's **Checks** and **Pull requests** permissions granted, BreachLens posts a Check Run on every PR to a connected repo. A PR that introduces a new Critical/High finding fails the check, and — where a fix is available — the check comment carries a one-click **Commit suggestion** anchored to the exact diff hunk.
+
+## Triage what matters
+
+Open **Findings**, then filter by **Severity: Critical, High** and **Has attack path: yes** — that narrows a raw finding count down to what a real attacker could chain. Click any row to open the detail drawer: AI-suggested fix, reachability tier, attack-path context, and **Generate auto-fix PR**.
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Scan GitHub posture" icon="shield-halved" href="/scanning/github-posture">
+    Check the account's own configuration — branch protection, required reviewers, Dependabot alerts — across every repo, public and private.
+  </Card>
+  <Card title="Run scans from CI" icon="terminal" href="/cli">
+    Wire the CLI into GitHub Actions, GitLab CI, or any pipeline. Fail the build on new Critical findings.
+  </Card>
+</CardGroup>
