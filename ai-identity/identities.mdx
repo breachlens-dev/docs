@@ -1,0 +1,54 @@
+---
+title: "Identities & NHI"
+description: "Discover human and non-human identities across your connected clouds and GitHub, and surface over-permissioned, stale, and unowned access."
+---
+
+Most breaches move through **identity** — an over-permissioned role, a stale access key, a service account nobody owns. BreachLens builds an inventory of the human and **non-human identities (NHI)** across your environment and flags the risky ones: excessive permissions, unused credentials, missing MFA, and orphaned ownership.
+
+## There's nothing to onboard
+
+Identities aren't a target you add — they're **discovered from the accounts you've already connected**. Once you've connected a [cloud account](/scanning/cloud) or a [GitHub account](/scanning/repositories), BreachLens can enumerate their identities using the same read-only credentials. No new keys, no separate connector.
+
+Providers discovered today:
+
+| Source | What it enumerates |
+|---|---|
+| **AWS** | IAM users, roles, access keys, last-used timestamps |
+| **Azure (Entra)** | Directory identities and app registrations via Graph |
+| **GCP** | Service accounts and their keys |
+| **GitHub** | Members, and the identities behind repository access |
+
+<Note>
+  AWS discovery needs IAM read access (`iam:ListUsers`, `ListRoles`, `ListAccessKeys`, `GetAccessKeyLastUsed`, and the tag/list calls) — all covered by the **`SecurityAudit`** policy you attached when connecting the cloud account. No extra grant.
+</Note>
+
+## Run discovery
+
+Open **Identities** and click **Refresh** to sweep every connected account in parallel. BreachLens builds (or updates) the identity inventory, correlates each identity's findings, and computes hygiene issues.
+
+<Steps>
+  <Step title="Connect an account first">
+    Discovery has nothing to enumerate until at least one cloud or GitHub account is connected.
+  </Step>
+  <Step title="Refresh">
+    From **Identities**, run **Refresh**. Re-run it whenever you want a fresh inventory — it's how you catch a newly-created role or a key that just went stale.
+  </Step>
+  <Step title="Triage the risky ones">
+    Filter to over-permissioned, stale-credential, or unowned identities. Open one to see its access, the findings attached to it, and — where available — who owns it.
+  </Step>
+</Steps>
+
+## Fix
+
+Each identity carries concrete recommended actions (revoke an unused key, scope down a role). For an eligible finding, **Remediate** generates an AI-drafted remediation you can review before applying it on your side.
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Connect a cloud account" icon="cloud" href="/scanning/cloud">
+    The source identities are discovered from — connect AWS / Azure / GCP read-only.
+  </Card>
+  <Card title="Attack paths" icon="route" href="/pipeline/continuous-monitoring">
+    See how an over-permissioned identity chains to the code, container, or cloud finding behind it.
+  </Card>
+</CardGroup>
