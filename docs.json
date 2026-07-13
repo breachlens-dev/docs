@@ -93,13 +93,13 @@
     "links": [
       {
         "label": "Support",
-        "href": "mailto:hi@breachlens.app"
+        "href": "mailto:sales@breachlens.app"
       }
     ],
     "primary": {
       "type": "button",
       "label": "Get a license",
-      "href": "mailto:hi@breachlens.app?subject=BreachLens%20license%20request"
+      "href": "mailto:sales@breachlens.app?subject=BreachLens%20license%20request"
     }
   },
   "contextual": {

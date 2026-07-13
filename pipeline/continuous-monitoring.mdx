@@ -35,7 +35,7 @@ Code changes are event-driven, but **posture, container images, and live web app
 BreachLens provides the **trigger** (the [`breachlens` CLI](/cli) and the scan API); you provide the **cadence**, using the scheduler you already run. Scans fired this way are recorded with a `SCHEDULED` trigger type, so you can tell an operator re-scan apart from a PR scan in the history.
 
 <Note>
-  There's no cron to configure *inside* BreachLens today — the schedule lives in your CI or cluster, which keeps it in the same place as the rest of your automation and works in air-gapped installs. Want native in-app scheduling? [Tell us](mailto:hi@breachlens.app?subject=BreachLens%20scheduled%20scans) — it helps us prioritize.
+  There's no cron to configure *inside* BreachLens today — the schedule lives in your CI or cluster, which keeps it in the same place as the rest of your automation and works in air-gapped installs. Want native in-app scheduling? [Tell us](mailto:sales@breachlens.app?subject=BreachLens%20scheduled%20scans) — it helps us prioritize.
 </Note>
 
 Pick whichever scheduler fits your environment:
