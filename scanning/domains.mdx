@@ -1,0 +1,98 @@
+---
+title: "Scan a web app"
+description: "Run DAST and an autonomous pentest against a running application — authenticated, authorized, and with reproducible Proof-of-Exploit."
+---
+
+Where code scanning reads your source, **domain scanning tests the running application from the outside in** — the way an attacker sees it. Two tiers share one target:
+
+- **DAST** — fast active scanning for XSS, injection, CSRF, XXE, and auth/session flaws.
+- **Autonomous pentest** — multi-tool exploit orchestration that goes past detection to *exploitation*, and ships **Proof-of-Exploit** (a reproducible `curl` + the exact request/response, and for select classes a replay video).
+
+## Add a domain
+
+Open **Domains → Add domain** and enter the host — a full name, a bare hostname, or `host:port`. Nothing else is needed to start a DAST scan.
+
+## Authorize before you attack
+
+<Warning>
+  **Active scanning sends real attack traffic.** BreachLens will not run the autonomous pentest against a domain until an admin has explicitly **authorized** it — confirming you own it or have written permission to test it. Open the domain, choose **Authorize**, and confirm. DAST also should only ever run against systems you're permitted to test.
+</Warning>
+
+This gate is enforced server-side: a pentest request against an un-authorized domain is refused. It's there to keep you on the right side of the line — pointing an exploit engine at something you don't own is a crime, not a scan.
+
+## Run DAST
+
+<Steps>
+  <Step title="Open the domain">
+    Go to **Domains** and click the target, then open the **Scan** tab.
+  </Step>
+  <Step title="Run the scan">
+    Start a **DAST** scan. It crawls the app and actively probes what it finds; expect results in minutes for a typical site.
+  </Step>
+</Steps>
+
+## Authenticated scanning
+
+Most of an app lives behind login. BreachLens reaches it two ways — pick by how the app authenticates:
+
+<CardGroup cols={2}>
+  <Card title="Credentials (breadth)" icon="key">
+    Give BreachLens the login and it authenticates itself, then crawls widely. Best when a form login or token gets you in.
+  </Card>
+  <Card title="Recorded session (depth)" icon="record-vinyl">
+    Proxy your browser through BreachLens and click through the exact flows that matter. Best for SPAs, multi-step wizards, and anything a crawler can't reach on its own.
+  </Card>
+</CardGroup>
+
+### Credentials
+
+On the domain's auth config (admin-gated), configure one of:
+
+- **Form login** — login URL, the username/password field names, your credentials, and a logged-in / logged-out text pattern so BreachLens can tell it's still authenticated.
+- **Bearer / header token** — a header name + value injected on every request.
+- **OAuth2** — token URL, client id/secret, scope, and grant type (`client_credentials` or `password`).
+
+Credentials are encrypted at rest and never returned; the config shows only `hasCredentials: true`.
+
+### Recorded session
+
+For flows a crawler can't drive, record one:
+
+<Steps>
+  <Step title="Start recording">
+    On the domain, **Start recording**. BreachLens opens a capture session and gives you a CA certificate to trust so your browser can proxy through it.
+  </Step>
+  <Step title="Click the flows that matter">
+    Log in and walk the app — the authenticated pages, the multi-step forms, the endpoints you care about. A live pane shows captured requests; a self-test flags if capture isn't working before you invest time.
+  </Step>
+  <Step title="Scan or promote to pentest">
+    Scan the recorded URLs directly, or **Promote to full pentest** to run the deep engine over exactly what you recorded.
+  </Step>
+</Steps>
+
+## Run an autonomous pentest
+
+Once the domain is authorized, start a **pentest** and pick a depth:
+
+| Depth | What it does |
+|---|---|
+| **Quick** | High + critical checks only — a fast pass. |
+| **Standard** | Recon, discovery, and vulnerability scanning — **no exploitation**. The default. |
+| **Aggressive** | Adds the **exploitation phase** — actually attempts the exploits to produce Proof-of-Exploit. Requires the authorization above. |
+
+If you recorded a session, promoting it runs the pentest against your captured flows; you can also narrow scope to specific discovered subdomains.
+
+## Proof-of-Exploit
+
+DAST is famously noisy. BreachLens's answer is proof: a finding marked **`CONFIRMED`** isn't a maybe — it carries the exact `curl` and wire-level request/response that reproduce it, and for select classes an exploit-replay video. That turns the noisiest stage of testing into the most trustworthy.
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Monitor continuously" icon="repeat" href="/pipeline/continuous-monitoring">
+    Schedule recurring DAST against staging and route new confirmed findings to your team.
+  </Card>
+  <Card title="Fit it into your pipeline" icon="diagram-project" href="/pipeline/cicd">
+    Where DAST and pentest sit in the delivery flow, and what to configure at each stage.
+  </Card>
+</CardGroup>

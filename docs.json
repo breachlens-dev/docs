@@ -28,7 +28,10 @@
         "group": "Scanning",
         "pages": [
           "scanning/repositories",
-          "scanning/github-posture"
+          "scanning/github-posture",
+          "scanning/cloud",
+          "scanning/containers",
+          "scanning/domains"
         ]
       },
       {

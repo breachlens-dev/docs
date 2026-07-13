@@ -1,0 +1,75 @@
+---
+title: "Scan container images"
+description: "Add a container image or connect a registry, run a CVE scan with reachability tiering, verify signatures, and export a signed SBOM."
+---
+
+Container scanning finds known vulnerabilities (CVEs) in the OS packages and language dependencies baked into an image, tiers them by **reachability** so you patch what's actually exercised first, and can verify the image was **signed** by a key you trust.
+
+## Add an image
+
+There are two ways to get images into BreachLens.
+
+<Tabs>
+  <Tab title="Add one image">
+    Open **Containers → Add container** and enter the image reference — e.g. `ghcr.io/acme/api:1.4.2` or `registry.internal/team/web:sha-abc123`. Optionally label its registry. That's it; a public image needs nothing more.
+  </Tab>
+
+  <Tab title="Connect a registry">
+    To pull in **many images at once** (and private ones), connect a registry under **Registries → Add registry**. BreachLens enumerates the repositories, and you import the tags you want as containers in one step.
+
+    Options when you connect: a **repository filter** (regex), a **tag limit** per repo, and **auto-import** / **auto-scan** toggles so new tags flow in and get scanned without a manual step.
+  </Tab>
+</Tabs>
+
+### Private registry credentials
+
+Private images need pull credentials, supplied when you **connect the registry** (encrypted at rest). Each type takes what that registry expects:
+
+| Registry | What you provide |
+|---|---|
+| **Amazon ECR** | An AWS region + read-only access key/secret (or reuse a connected AWS [cloud account](/scanning/cloud)). ECR is the reference path and is fully supported. |
+| **Azure Container Registry** | The registry name + admin username/password. |
+| **Google Artifact Registry** | Project ID + location + repository + a service-account key (or reuse a connected GCP cloud account). |
+| **Docker Hub** | A namespace, optionally a username + access token (omit for anonymous public pulls). |
+
+<Note>
+  ECR is the fully-supported reference path. If a private ACR / GAR / Docker Hub connection needs a hand for your setup, [reach out](mailto:hi@breachlens.app?subject=BreachLens%20private%20registry) — we'll get it wired.
+</Note>
+
+## Run a scan
+
+<Steps>
+  <Step title="Open the container">
+    Go to **Containers** and click the image.
+  </Step>
+  <Step title="Run the scan">
+    Click **Run scan**. BreachLens pulls the image server-side and reports CVEs across OS packages and language dependencies, each tiered by reachability.
+  </Step>
+  <Step title="Triage patch-first">
+    Sort by reachability + severity — a Critical CVE in a function your image actually calls beats a Critical in a package that's present but never loaded.
+  </Step>
+</Steps>
+
+## Verify signatures
+
+If you sign your images, BreachLens can confirm each scanned image was signed by a key you trust — surfacing an unsigned or wrong-key image as a supply-chain finding.
+
+Signing keys are configured per **Application**, not per image: add the trusted public key(s) (ECDSA / RSA / Ed25519 PEM, or a keyless signer identity) to the Application, and every container linked to it is checked on its next scan. A revoked key stops trusting new images without deleting the history.
+
+## Export an SBOM
+
+Every container can produce a software bill of materials for procurement or downstream tooling:
+
+- **CycloneDX** (default) — `Download SBOM`
+- **SPDX** — choose the SPDX format for NTIA / EO 14028 evidence
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Monitor continuously" icon="repeat" href="/pipeline/continuous-monitoring">
+    Auto-import + auto-scan new tags, and schedule nightly re-scans so a new base-image CVE surfaces overnight.
+  </Card>
+  <Card title="Scan a web app" icon="globe" href="/scanning/domains">
+    Point DAST and the autonomous pentest at a running app and get reproducible Proof-of-Exploit.
+  </Card>
+</CardGroup>
