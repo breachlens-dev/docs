@@ -1,0 +1,55 @@
+---
+title: "Scan a Kubernetes cluster"
+description: "Connect a cluster read-only with a kubeconfig and audit it against the CIS Kubernetes Benchmark — agentless, nothing deployed in-cluster."
+---
+
+Kubernetes posture audits how a cluster is *configured* — the API server, etcd, kubelet, scheduler, controller-manager, RBAC, and core workload settings — against the **CIS Kubernetes Benchmark**. It's **agentless and read-only**: BreachLens connects with a kubeconfig you provide and reads configuration; it deploys nothing into the cluster.
+
+## Connect a cluster
+
+Open **Kubernetes → Add cluster** and provide a kubeconfig:
+
+- `Display name` · `Cluster name` · `Context` (optional — which context in the kubeconfig to use) · **`Kubeconfig`** (paste the YAML)
+
+The kubeconfig is encrypted at rest (AES-256-GCM) and never returned; the UI shows only that credentials are configured.
+
+<Tip>
+  Use **Test** after saving — it validates the kubeconfig's shape offline so you catch a malformed file before the first scan.
+</Tip>
+
+### Least-privilege access
+
+The scan can only see what the kubeconfig's identity is allowed to read. Point it at a **read-only** identity — a service account bound to the built-in `view` ClusterRole (plus read access to the control-plane resources the benchmark inspects) is the safe choice. The scan never writes, and it never needs cluster-admin.
+
+<Note>
+  Onboarding is **out-of-cluster** (a kubeconfig from your workstation or CI). BreachLens doesn't run an in-cluster agent to scan posture — the kubeconfig is all it needs.
+</Note>
+
+## Run a scan
+
+<Steps>
+  <Step title="Open the cluster">
+    Go to **Kubernetes** and click the connected cluster.
+  </Step>
+  <Step title="Run the scan">
+    Click **Run scan**. It performs a single read-only pass and evaluates the cluster against the CIS Kubernetes Benchmark across the control plane, RBAC, and workload settings.
+  </Step>
+  <Step title="Read the results">
+    Findings are grouped by the service they came from (apiserver, etcd, kubelet, RBAC, …) and carry their CIS control mapping for compliance evidence.
+  </Step>
+</Steps>
+
+## Keep it current
+
+A cluster drifts as workloads and RBAC change. Re-run the benchmark on a schedule to catch regressions; the per-scan **⇆ Diff** shows exactly what changed since the last run.
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Monitor continuously" icon="repeat" href="/pipeline/continuous-monitoring">
+    Schedule recurring cluster benchmarks and route drift to your team.
+  </Card>
+  <Card title="Runtime detection" icon="server" href="/pipeline/runtime">
+    Go beyond configuration — stream live workload behavior with runtime sensors.
+  </Card>
+</CardGroup>

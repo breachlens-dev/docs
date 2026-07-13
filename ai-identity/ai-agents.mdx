@@ -1,0 +1,62 @@
+---
+title: "AI agents (red-team)"
+description: "Register an AI agent or LLM endpoint and run an adversarial red-team — prompt injection, jailbreaks, system-prompt leaks, PII exfiltration, and more."
+---
+
+BreachLens red-teams your **AI agents and LLM endpoints** the way an attacker would probe them: prompt injection, jailbreaks, system-prompt leakage, PII exfiltration, content-filter bypass, and excessive agent permissions. You give it an endpoint to attack; it runs a battery of adversarial skills and judges the responses.
+
+## Register an agent
+
+Open **AI Agents → Add agent** and describe the endpoint under test:
+
+- `Name`
+- `Agent type` — the kind of endpoint (OpenAI-compatible, Azure AI Foundry, Anthropic API, Ollama, or a custom HTTP endpoint)
+- `Endpoint` — the URL prompts are POSTed to
+- `Auth` — how to authenticate to that endpoint:
+  | Auth kind | Header sent |
+  |---|---|
+  | **Bearer / OpenAI key** | `Authorization: Bearer …` |
+  | **Anthropic key** | `x-api-key` + `anthropic-version` |
+  | **Azure key** | `api-key` (for Azure OpenAI / Foundry) |
+  | **API key** | `X-Api-Key` |
+  | **None** | anonymous (e.g. a local Ollama) |
+- Optionally a `Model ID` (the deployment/model name) and a `System-prompt hint` to sharpen the probes.
+
+The auth value is encrypted at rest and never returned.
+
+<Tip>
+  Use **Test connection** before scanning — it confirms BreachLens can reach and authenticate to the endpoint (it auto-detects chat-completions vs the newer responses API).
+</Tip>
+
+## You need a judge
+
+The red-team skills probe your agent; a **judge model** decides whether each response is a real finding. The judge is one of your configured [AI providers](mailto:hi@breachlens.app?subject=BreachLens%20AI%20providers) — **Anthropic, OpenAI, or a local Ollama**. If no AI provider is active for your org, the scan can't judge results and will fail, so configure one first.
+
+<Note>
+  The judge and the target are independent: you can red-team an Azure-hosted agent while judging with a local Ollama model, keeping evaluation fully in-house.
+</Note>
+
+## Run a scan
+
+<Steps>
+  <Step title="Open the agent">
+    Go to **AI Agents** and click the registered agent.
+  </Step>
+  <Step title="Run the scan">
+    Click **Run scan**. BreachLens runs its adversarial skills — prompt-injection, system-prompt-leak, jailbreak, PII-exfil, content-filter-validation, and permissions-audit — against the endpoint.
+  </Step>
+  <Step title="Review findings">
+    Each confirmed weakness is a finding with the prompt that triggered it and the judge's reasoning.
+  </Step>
+</Steps>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Scan an MCP server" icon="plug" href="/ai-identity/mcp-servers">
+    Security-test the Model Context Protocol servers your agents connect to.
+  </Card>
+  <Card title="Identities & NHI" icon="key" href="/ai-identity/identities">
+    The non-human identities and keys your agents hold — over-permissioned or stale.
+  </Card>
+</CardGroup>

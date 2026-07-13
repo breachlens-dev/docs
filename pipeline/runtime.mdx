@@ -1,0 +1,69 @@
+---
+title: "Runtime sensors"
+description: "Deploy host and workload sensors that stream live behavior — syscalls, file integrity, network, and vulnerabilities — into the same correlation graph as every scan."
+---
+
+Every other tier scans code or configuration; runtime **watches the running system**. BreachLens sensors stream host and workload events continuously — process and syscall activity, file-integrity changes, command execution, network connections, and vulnerability detections — into the same correlation graph as your scans, so a runtime alert can chain to the code finding and cloud misconfiguration behind it.
+
+Runtime is an **install**, not a scan-a-target: you deploy sensors once, and they report continuously.
+
+## Point BreachLens at your sensor manager
+
+Open **Settings → Runtime** and configure the manager the sensors report to:
+
+- `Manager address` — the host / FQDN / IP of your sensor manager
+- `Manager port` — default `1514`
+- `Enrollment password` — optional, encrypted at rest (the UI shows only that it's set)
+- `Agent version` — optional; **Detect** best-effort reads it from the manager
+
+These values populate the copy-paste **install snippets** on the Runtime tab.
+
+<Note>
+  Ingestion is enabled once the deployment has `SENSOR_MANAGER_API_URL` wired to your manager's API. Until the sensor stack is deployed and that URL is set, the runtime views stay empty by design — nothing is reporting yet.
+</Note>
+
+## Deploy sensors and enroll
+
+<Steps>
+  <Step title="Copy the install snippet">
+    From the Runtime tab, grab the install command for a host agent (or a Kubernetes DaemonSet for cluster-wide coverage). It's pre-filled with your manager address, port, and enrollment.
+  </Step>
+  <Step title="Run it on the workloads you want covered">
+    Install on the hosts or roll out the DaemonSet. Agents enroll against the manager and start reporting.
+  </Step>
+  <Step title="Discover the agents">
+    Back in BreachLens, click **Discover agents** — it pulls in every enrolled sensor and shows its health (healthy / stale / offline).
+  </Step>
+  <Step title="Link agents to assets (optional)">
+    Attach an agent to the container it runs so runtime findings roll up to that asset and its attack paths.
+  </Step>
+</Steps>
+
+## What you get
+
+Once agents report, BreachLens polls the manager continuously and turns alerts into runtime findings:
+
+| Signal | Examples |
+|---|---|
+| **Behavior** | Syscall / process activity, file-integrity changes, command execution, network connections |
+| **Vulnerabilities** | Packages on the running host flagged against vulnerability databases |
+| **Dashboard rollups** | MITRE ATT&CK tactics, top attacker IPs, and compliance framework coverage |
+
+The **cross-tier vulnerability view** lines up CVEs found in a container image at build time against CVEs the sensor sees on the running host — so you can tell *present in the image* from *live on the box*.
+
+## Egress verification
+
+Alongside detection, the **egress verification pack** aggregates network flow and TLS events into a "what did this actually talk to" record, each destination marked **documented**, **unknown**, or **anomaly** — the procurement-grade evidence that an air-gapped or egress-restricted deployment is behaving.
+
+## Where it fits
+
+Runtime is the **continuous** mode of [continuous monitoring](/pipeline/continuous-monitoring) — always-on, streaming, not on a cadence. Pair it with event-driven code scans and scheduled posture for coverage from commit to production.
+
+<CardGroup cols={2}>
+  <Card title="Continuous monitoring" icon="repeat" href="/pipeline/continuous-monitoring">
+    How runtime fits alongside event-driven and scheduled scanning.
+  </Card>
+  <Card title="CI/CD pipeline" icon="diagram-project" href="/pipeline/cicd">
+    The full map — where every tier plugs in, from IDE to runtime.
+  </Card>
+</CardGroup>

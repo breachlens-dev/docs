@@ -31,14 +31,24 @@
           "scanning/github-posture",
           "scanning/cloud",
           "scanning/containers",
-          "scanning/domains"
+          "scanning/domains",
+          "scanning/kubernetes"
+        ]
+      },
+      {
+        "group": "AI & identity",
+        "pages": [
+          "ai-identity/identities",
+          "ai-identity/ai-agents",
+          "ai-identity/mcp-servers"
         ]
       },
       {
         "group": "Pipeline & monitoring",
         "pages": [
           "pipeline/cicd",
-          "pipeline/continuous-monitoring"
+          "pipeline/continuous-monitoring",
+          "pipeline/runtime"
         ]
       },
       {

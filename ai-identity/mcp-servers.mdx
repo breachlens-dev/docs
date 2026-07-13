@@ -1,0 +1,54 @@
+---
+title: "MCP servers"
+description: "Register a Model Context Protocol server and run the OWASP-MCP probe suite — tool poisoning, prompt injection, rug-pulls, token theft, and more."
+---
+
+Model Context Protocol (MCP) servers hand tools to AI agents — and a malicious or misconfigured one is a direct path into whatever the agent can touch. BreachLens connects to an MCP server, enumerates its tools, and runs the **OWASP-MCP probe suite**: tool poisoning, prompt injection, rug-pulls, tool shadowing, indirect injection, token theft, malicious code execution, excessive permission scope, remote access, and a multi-vector check.
+
+## Register a server
+
+Open **MCP Servers → Add server** and describe how to reach it:
+
+- `Name` · `Description` (optional)
+- `Transport` — how the server speaks:
+  | Transport | Endpoint value |
+  |---|---|
+  | **STDIO** | the process command to launch (a local server) |
+  | **HTTP** | the server URL |
+  | **SSE** | the server URL |
+  | **WebSocket** | a `wss://` URL |
+- `Endpoint` — the command or URL for the chosen transport.
+- Optionally link it to an Application, Repository, or Container for cross-tier context.
+
+<Note>
+  **Authenticated remote servers are coming.** Today you can point BreachLens at a local (STDIO) server or an unauthenticated HTTP / SSE / WebSocket endpoint; per-server bearer-token auth isn't configurable yet. If you need to test a token-protected MCP server, [tell us](mailto:hi@breachlens.app?subject=BreachLens%20MCP%20auth).
+</Note>
+
+## Run a scan
+
+<Steps>
+  <Step title="Open the server">
+    Go to **MCP Servers** and click the registered server.
+  </Step>
+  <Step title="Run the scan">
+    Click **Run scan**. BreachLens opens the transport, completes the MCP handshake, enumerates the exposed tools, and runs the probe suite against them. If the handshake fails, you get a clear connectivity finding instead of a silent miss.
+  </Step>
+  <Step title="Review findings">
+    Each probe that fires is a finding mapped to its OWASP-MCP category.
+  </Step>
+</Steps>
+
+<Note>
+  Some probes (prompt injection, tool poisoning, indirect injection) are **LLM-judged** — they reuse the same judge model as [AI-agent scans](/ai-identity/ai-agents). With no AI provider configured they simply skip; the heuristic probes still run, so a scan always produces a result.
+</Note>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Red-team an AI agent" icon="robot" href="/ai-identity/ai-agents">
+    Probe the agents that consume these MCP servers for prompt injection and more.
+  </Card>
+  <Card title="Fit it into your pipeline" icon="diagram-project" href="/pipeline/cicd">
+    Where AI and MCP testing sit alongside the rest of your security pipeline.
+  </Card>
+</CardGroup>
