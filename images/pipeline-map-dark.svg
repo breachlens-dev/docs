@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 210" width="960" height="210" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" role="img" aria-label="BreachLens across the CI/CD pipeline: IDE, Commit and PR, Build, Test, Deploy and Run, all feeding one correlation engine.">
+<rect x="0" y="20" width="160" height="64" rx="10" fill="rgba(59,130,246,0.12)" stroke="#3B82F6" stroke-width="1.4"/>
+<text x="80" y="46" text-anchor="middle" font-size="15" font-weight="700" fill="#60A5FA">IDE</text>
+<text x="80" y="68" text-anchor="middle" font-size="10" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#CBD5E1">shift-left</text>
+<line x1="80" y1="86" x2="80" y2="98" stroke="#64748B" stroke-width="1.3"/>
+<path d="M76 95 L80 99 L84 95" fill="none" stroke="#64748B" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="80" y="118" text-anchor="middle" font-size="10" fill="#94A3B8">Inline findings</text>
+<text x="80" y="131" text-anchor="middle" font-size="10" fill="#94A3B8">before you push</text>
+<line x1="160" y1="52" x2="194" y2="52" stroke="#64748B" stroke-width="1.4"/>
+<polygon points="194,48 200,52 194,56" fill="#64748B"/>
+<rect x="200" y="20" width="160" height="64" rx="10" fill="rgba(59,130,246,0.12)" stroke="#3B82F6" stroke-width="1.4"/>
+<text x="280" y="46" text-anchor="middle" font-size="15" font-weight="700" fill="#60A5FA">COMMIT &#183; PR</text>
+<text x="280" y="68" text-anchor="middle" font-size="10" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#CBD5E1">SAST &#183; secrets</text>
+<line x1="280" y1="86" x2="280" y2="98" stroke="#64748B" stroke-width="1.3"/>
+<path d="M276 95 L280 99 L284 95" fill="none" stroke="#64748B" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="280" y="118" text-anchor="middle" font-size="10" fill="#94A3B8">PR checks +</text>
+<text x="280" y="131" text-anchor="middle" font-size="10" fill="#94A3B8">auto-fix PRs</text>
+<line x1="360" y1="52" x2="394" y2="52" stroke="#64748B" stroke-width="1.4"/>
+<polygon points="394,48 400,52 394,56" fill="#64748B"/>
+<rect x="400" y="20" width="160" height="64" rx="10" fill="rgba(59,130,246,0.12)" stroke="#3B82F6" stroke-width="1.4"/>
+<text x="480" y="46" text-anchor="middle" font-size="15" font-weight="700" fill="#60A5FA">BUILD</text>
+<text x="480" y="68" text-anchor="middle" font-size="10" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#CBD5E1">SCA &#183; IaC &#183; SBOM</text>
+<line x1="480" y1="86" x2="480" y2="98" stroke="#64748B" stroke-width="1.3"/>
+<path d="M476 95 L480 99 L484 95" fill="none" stroke="#64748B" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="480" y="118" text-anchor="middle" font-size="10" fill="#94A3B8">Dependency +</text>
+<text x="480" y="131" text-anchor="middle" font-size="10" fill="#94A3B8">supply-chain</text>
+<line x1="560" y1="52" x2="594" y2="52" stroke="#64748B" stroke-width="1.4"/>
+<polygon points="594,48 600,52 594,56" fill="#64748B"/>
+<rect x="600" y="20" width="160" height="64" rx="10" fill="rgba(59,130,246,0.12)" stroke="#3B82F6" stroke-width="1.4"/>
+<text x="680" y="46" text-anchor="middle" font-size="15" font-weight="700" fill="#60A5FA">TEST</text>
+<text x="680" y="68" text-anchor="middle" font-size="10" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#CBD5E1">DAST &#183; Pentest</text>
+<line x1="680" y1="86" x2="680" y2="98" stroke="#64748B" stroke-width="1.3"/>
+<path d="M676 95 L680 99 L684 95" fill="none" stroke="#64748B" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="680" y="118" text-anchor="middle" font-size="10" fill="#94A3B8">Outside-in +</text>
+<text x="680" y="131" text-anchor="middle" font-size="10" fill="#94A3B8">Proof-of-Exploit</text>
+<line x1="760" y1="52" x2="794" y2="52" stroke="#64748B" stroke-width="1.4"/>
+<polygon points="794,48 800,52 794,56" fill="#64748B"/>
+<rect x="800" y="20" width="160" height="64" rx="10" fill="rgba(59,130,246,0.12)" stroke="#3B82F6" stroke-width="1.4"/>
+<text x="880" y="46" text-anchor="middle" font-size="15" font-weight="700" fill="#60A5FA">DEPLOY &#183; RUN</text>
+<text x="880" y="68" text-anchor="middle" font-size="10" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#CBD5E1">Runtime &#183; Posture</text>
+<line x1="880" y1="86" x2="880" y2="98" stroke="#64748B" stroke-width="1.3"/>
+<path d="M876 95 L880 99 L884 95" fill="none" stroke="#64748B" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="880" y="118" text-anchor="middle" font-size="10" fill="#94A3B8">Live detection +</text>
+<text x="880" y="131" text-anchor="middle" font-size="10" fill="#94A3B8">attack-paths</text>
+<rect x="0" y="156" width="960" height="44" rx="12" fill="rgba(59,130,246,0.08)" stroke="#3B82F6" stroke-width="1.2" stroke-dasharray="6 4"/>
+<text x="480" y="179" text-anchor="middle" font-size="12" font-weight="600" fill="#E2E8F0">One correlation engine &#8212; every stage feeds it</text>
+<text x="480" y="194" text-anchor="middle" font-size="10.5" fill="#94A3B8">a commit finding chains to a test exploit and a deploy misconfig as one scored attack path</text>
+</svg>
