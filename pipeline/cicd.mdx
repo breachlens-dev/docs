@@ -30,8 +30,8 @@ Every stage feeds the **same correlation engine**, so a commit-stage code findin
 | **IDE** | Inline findings, scan-your-working-copy before push | Install the [VS Code extension](/ide/vscode) (also Cursor / Windsurf), connect it to your deployment |
 | **Commit / PR** | SAST + secret detection, PR check runs, auto-fix PRs | Install the [GitHub App](/scanning/repositories) with Checks + Pull requests permissions |
 | **CI (any stage)** | Any tier, gate the build on severity | Add the [`breachlens` CLI](/cli) to your pipeline — GitHub Actions, GitLab CI, or any runner |
-| **Build** | SCA, IaC, container CVEs, signed SBOM | Run the CLI in the build job, or let PR checks cover it |
-| **Test** | DAST + autonomous pentest with Proof-of-Exploit | Add a [Domain target](mailto:hi@breachlens.app?subject=BreachLens%20DAST%20setup) pointed at your staging URL |
+| **Build** | SCA, IaC, container CVEs, signed SBOM | Run the CLI in the build job, or add [container images](/scanning/containers) / a [cloud account](/scanning/cloud) |
+| **Test** | DAST + autonomous pentest with Proof-of-Exploit | Add a [web-app target](/scanning/domains) pointed at your staging URL |
 | **Deploy / Run** | Runtime sensors, continuous posture, attack-paths | See [Continuous monitoring](/pipeline/continuous-monitoring) |
 
 ## Stage by stage

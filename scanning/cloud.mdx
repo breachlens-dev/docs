@@ -1,0 +1,77 @@
+---
+title: "Scan cloud posture"
+description: "Connect an AWS, Azure, or GCP account read-only and audit its configuration against 12 compliance frameworks."
+---
+
+Cloud posture (CSPM) checks how your cloud accounts are *configured* — public buckets, over-permissive roles, unencrypted volumes, missing logging, and hundreds of other checks — and maps each finding to the compliance frameworks that care about it. It's **read-only**: BreachLens reads your cloud's configuration, never changes it.
+
+## Connect an account
+
+Open **Cloud Accounts → Add account** and pick your provider. You supply **read-only** credentials; BreachLens encrypts them at rest (AES-256-GCM) and never returns them.
+
+<Tabs>
+  <Tab title="AWS">
+    Provide an IAM **access key + secret** for a read-only user (optionally a session token for temporary `ASIA…` credentials):
+
+    - `AWS Account ID` (12 digits) · `Region` (optional) · `Access key ID` · `Secret access key` · `Session token` (optional)
+
+    **Least-privilege grant:** attach the two AWS-managed policies **`SecurityAudit`** and **`ViewOnlyAccess`** to that IAM user. Together they permit configuration reads across services without any write or data-plane access.
+  </Tab>
+
+  <Tab title="Azure">
+    Provide a **service principal** scoped to one subscription:
+
+    - `Tenant ID` · `Subscription ID` · `Client ID` (application id) · `Client secret`
+
+    **Least-privilege grant:** assign the SP the **`Reader`** role on the subscription and **`Security Reader`** at the tenant. Both are read-only built-in roles.
+  </Tab>
+
+  <Tab title="GCP">
+    Provide a **service-account key** (the full JSON) for a read-only service account:
+
+    - `Project ID` · `Service account key` (paste the JSON)
+
+    **Least-privilege grant:** give the service account **`roles/viewer`** and **`roles/iam.securityReviewer`** on the project.
+  </Tab>
+</Tabs>
+
+<Note>
+  **Credentials are supplied as keys today** — an IAM access key, an Azure client secret, or a GCP service-account key. Keyless onboarding (AWS role assumption, GCP Workload Identity Federation, Azure managed identity) is on the roadmap; [tell us](mailto:hi@breachlens.app?subject=BreachLens%20keyless%20cloud%20onboarding) if it's a procurement gate. Rotate the key on your side and re-paste it any time from the account's Settings.
+</Note>
+
+<Tip>
+  Use **Test connection** in the Add-account modal before saving — it validates the credentials against the provider so you catch a typo'd key or a missing role before the first scan.
+</Tip>
+
+## Run a posture scan
+
+<Steps>
+  <Step title="Open the account">
+    Go to **Cloud Accounts** and click the connected account.
+  </Step>
+  <Step title="Run the scan">
+    Click **Run scan**. A posture scan is a single read-only pass over the account's configuration — no agents, nothing deployed into your cloud.
+  </Step>
+  <Step title="Read the results by framework">
+    Each finding is mapped to the compliance frameworks it affects, so you can filter to "what fails CIS" or "what fails SOC 2" rather than one flat list.
+  </Step>
+</Steps>
+
+<Note>
+  **Kubernetes clusters are a separate target.** Cluster posture (CIS Kubernetes Benchmark) connects a Kubernetes cluster with its own read-only kubeconfig, not a cloud account — add it under **Kubernetes** rather than here.
+</Note>
+
+## Keep it current
+
+Cloud drifts constantly — a bucket goes public, someone widens a role. Re-run posture on a schedule so a one-time audit becomes an ongoing control; the per-scan **⇆ Diff** shows exactly what changed since the last run.
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Monitor continuously" icon="repeat" href="/pipeline/continuous-monitoring">
+    Schedule nightly posture re-scans and route drift to Slack / Teams / Jira.
+  </Card>
+  <Card title="Scan container images" icon="box" href="/scanning/containers">
+    CVE detection on the images you deploy, with reachability tiering and signature verification.
+  </Card>
+</CardGroup>
