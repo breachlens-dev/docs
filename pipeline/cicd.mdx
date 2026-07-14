@@ -22,7 +22,7 @@ Every stage feeds the **same correlation engine**, so a commit-stage code findin
 |---|---|---|
 | **IDE** | Inline findings, scan-your-working-copy before push | Install the [VS Code extension](/ide/vscode) (also Cursor / Windsurf), connect it to your deployment |
 | **Commit / PR** | SAST + secret detection, PR check runs, auto-fix PRs | Install the [GitHub App](/scanning/repositories) with Checks + Pull requests permissions |
-| **CI (any stage)** | Any tier, gate the build on severity | Add the [`breachlens` CLI](/cli) to your pipeline — GitHub Actions, GitLab CI, or any runner |
+| **CI (any stage)** | Any tier, gate the build on severity | **Generate a pipeline file** in Settings → Integrations, or copy a [template](https://github.com/breachlens-dev/breachlens/tree/main/ci-templates) — GitHub Actions, GitLab CI, Jenkins |
 | **Build** | SCA, IaC, container CVEs, signed SBOM | Run the CLI in the build job, or add [container images](/scanning/containers) / a [cloud account](/scanning/cloud) |
 | **Test** | DAST + autonomous pentest with Proof-of-Exploit | Add a [web-app target](/scanning/domains) pointed at your staging URL |
 | **Deploy / Run** | Runtime sensors, continuous posture, attack-paths | See [Continuous monitoring](/pipeline/continuous-monitoring) |
@@ -54,26 +54,54 @@ This needs the GitHub App's **Checks** and **Pull requests** permissions — see
 
 ### CI — gate the build from any runner
 
-The [`breachlens` CLI](/cli) is a headless client that triggers a scan, waits, downloads the SARIF, and turns the result into an **exit code** — `0` passes, `1` fails the build. The same command drops into a pre-push hook (advisory) or a required CI check (enforcing):
+Run a scan and turn the result into an **exit code** — `0` passes, `1` fails the build — from GitHub Actions, GitLab CI, Jenkins, or any runner. The scan runs server-side; the runner only triggers it, so the job needs no scanners and no language runtime.
+
+**Fastest path — generate a file.** Open **Settings → Integrations → CI/CD pipeline file** and pick your platform, the scan shape, the severity gate, and whether you're behind Cloudflare Access. The generator emits a ready-to-paste file plus the exact secrets to add. Nothing is saved, and no secret value is ever written into the file — it references them by name.
+
+Prefer to copy from source? The canonical [templates](https://github.com/breachlens-dev/breachlens/tree/main/ci-templates) — one per platform — all share the same trigger → poll → SARIF → severity-gate contract:
 
 <CodeGroup>
 ```yaml GitHub Actions
-- run: npx @breachlens/cli scan --repo ${{ github.repository }} --severity-gate HIGH
-  env:
-    BREACHLENS_API_URL: ${{ vars.BREACHLENS_API_URL }}
-    BREACHLENS_API_TOKEN: ${{ secrets.BREACHLENS_API_TOKEN }}
+# .github/workflows/breachlens.yml — wraps the composite action;
+# auto-onboards the repo and uploads SARIF to the Security tab.
+- uses: breachlens-dev/breachlens/.github/actions/breachlens-scan@main
+  with:
+    api-url:   ${{ vars.BREACHLENS_API_URL }}
+    api-token: ${{ secrets.BREACHLENS_API_TOKEN }}
+    severity-gate: HIGH
 ```
 
 ```yaml GitLab CI
-breachlens_scan:
-  image: node:20-alpine
-  script:
-    - npx @breachlens/cli scan --repo-id "$BREACHLENS_REPO_ID" --severity-gate HIGH
+# .gitlab-ci.yml — include the shared job, set two variables.
+include:
+  - remote: 'https://raw.githubusercontent.com/breachlens-dev/breachlens/main/ci-templates/gitlab/breachlens-scan.gitlab-ci.yml'
+variables:
+  BREACHLENS_REPO_ID: "<your-repo-id>"
+  BREACHLENS_SEVERITY_GATE: "HIGH"
+```
+
+```groovy Jenkins
+// Jenkinsfile — declarative pipeline, curl-based, alpine agent.
+// Full template: ci-templates/jenkins/Jenkinsfile
+pipeline {
+  agent { docker { image 'alpine:3.20' } }
+  environment { BREACHLENS_API_TOKEN = credentials('breachlens-api-token') }
+  stages { stage('BreachLens scan') { steps { sh 'curl … /api/repos/$ID/scan; poll; gate' } } }
+}
 ```
 </CodeGroup>
 
+Two shapes belong on different triggers — the generator produces the right one for each:
+
+- **Code gate** — SAST / SCA / Secrets / IaC on push + PR; **blocks the merge**.
+- **Deployed-app scan** — DAST on a schedule; **never blocks a PR**.
+
 <Tip>
-  Start with `--severity-gate none` (report-only) so you see findings without breaking builds, then tighten to `HIGH` or `CRITICAL` once the team has triaged the baseline.
+  On the GitHub App already? Your repos are scanned automatically on push + PR — you only need a pipeline file when you want the gate to run inside your own pipeline: a branch-protection required check, self-hosted / air-gapped runners, or non-GitHub CI.
+</Tip>
+
+<Tip>
+  Start with `severity-gate: none` (report-only) so you see findings without breaking builds, then tighten to `HIGH` or `CRITICAL` once the team has triaged the baseline.
 </Tip>
 
 ### Build — dependencies, supply chain, IaC
