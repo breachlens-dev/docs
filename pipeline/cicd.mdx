@@ -22,7 +22,7 @@ Every stage feeds the **same correlation engine**, so a commit-stage code findin
 |---|---|---|
 | **IDE** | Inline findings, scan-your-working-copy before push | Install the [VS Code extension](/ide/vscode) (also Cursor / Windsurf), connect it to your deployment |
 | **Commit / PR** | SAST + secret detection, PR check runs, auto-fix PRs | Install the [GitHub App](/scanning/repositories) with Checks + Pull requests permissions |
-| **CI (any stage)** | Any tier, gate the build on severity | **Generate a pipeline file** in Settings → Integrations, or copy a [template](https://github.com/breachlens-dev/breachlens/tree/main/ci-templates) — GitHub Actions, GitLab CI, Jenkins |
+| **CI (any stage)** | Any tier, gate the build on severity | **Generate a pipeline file** in Settings → Integrations, or copy a [template](https://github.com/breachlens-dev/breachlens-action) — GitHub Actions, GitLab CI, Jenkins |
 | **Build** | SCA, IaC, container CVEs, signed SBOM | Run the CLI in the build job, or add [container images](/scanning/containers) / a [cloud account](/scanning/cloud) |
 | **Test** | DAST + autonomous pentest with Proof-of-Exploit | Add a [web-app target](/scanning/domains) pointed at your staging URL |
 | **Deploy / Run** | Runtime sensors, continuous posture, attack-paths | See [Continuous monitoring](/pipeline/continuous-monitoring) |
@@ -58,13 +58,13 @@ Run a scan and turn the result into an **exit code** — `0` passes, `1` fails t
 
 **Fastest path — generate a file.** Open **Settings → Integrations → CI/CD pipeline file** and pick your platform, the scan shape, the severity gate, and whether you're behind Cloudflare Access. The generator emits a ready-to-paste file plus the exact secrets to add. Nothing is saved, and no secret value is ever written into the file — it references them by name.
 
-Prefer to copy from source? The canonical [templates](https://github.com/breachlens-dev/breachlens/tree/main/ci-templates) — one per platform — all share the same trigger → poll → SARIF → severity-gate contract:
+Prefer to copy from source? The canonical [templates](https://github.com/breachlens-dev/breachlens-action) — one per platform — all share the same trigger → poll → SARIF → severity-gate contract:
 
 <CodeGroup>
 ```yaml GitHub Actions
-# .github/workflows/breachlens.yml — wraps the composite action;
+# .github/workflows/breachlens.yml — wraps the published action;
 # auto-onboards the repo and uploads SARIF to the Security tab.
-- uses: breachlens-dev/breachlens/.github/actions/breachlens-scan@main
+- uses: breachlens-dev/breachlens-action@v1
   with:
     api-url:   ${{ vars.BREACHLENS_API_URL }}
     api-token: ${{ secrets.BREACHLENS_API_TOKEN }}
@@ -74,7 +74,7 @@ Prefer to copy from source? The canonical [templates](https://github.com/breachl
 ```yaml GitLab CI
 # .gitlab-ci.yml — include the shared job, set two variables.
 include:
-  - remote: 'https://raw.githubusercontent.com/breachlens-dev/breachlens/main/ci-templates/gitlab/breachlens-scan.gitlab-ci.yml'
+  - remote: 'https://raw.githubusercontent.com/breachlens-dev/breachlens-action/main/gitlab/breachlens-scan.gitlab-ci.yml'
 variables:
   BREACHLENS_REPO_ID: "<your-repo-id>"
   BREACHLENS_SEVERITY_GATE: "HIGH"
@@ -82,7 +82,7 @@ variables:
 
 ```groovy Jenkins
 // Jenkinsfile — declarative pipeline, curl-based, alpine agent.
-// Full template: ci-templates/jenkins/Jenkinsfile
+// Full template: github.com/breachlens-dev/breachlens-action → jenkins/Jenkinsfile
 pipeline {
   agent { docker { image 'alpine:3.20' } }
   environment { BREACHLENS_API_TOKEN = credentials('breachlens-api-token') }
