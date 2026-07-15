@@ -56,7 +56,39 @@ This needs the GitHub App's **Checks** and **Pull requests** permissions — see
 
 Run a scan and turn the result into an **exit code** — `0` passes, `1` fails the build — from GitHub Actions, GitLab CI, Jenkins, or any runner. The scan runs server-side; the runner only triggers it, so the job needs no scanners and no language runtime.
 
+#### Two ways to gate on GitHub — pick per repo
+
+The choice is **per repo, never per policy**: the rules live in one place (Settings → Policies) no matter which path a repo uses.
+
+```mermaid
+flowchart TB
+  subgraph gh ["GitHub App — install once"]
+    A([App]) --> R1[repo A]
+    A --> R2[repo B]
+    A --> R3["new repo ✓"]
+  end
+  subgraph pf ["Pipeline file — per repo, any CI"]
+    P1["repo X · yml"]
+    P2["repo Y · yml"]
+    P3["repo Z · yml"]
+  end
+  gh -->|PR check| POL["Settings → Policies<br/>org default policy"]
+  pf -->|"gate: policy"| POL
+```
+
+| | GitHub App | Pipeline file |
+|---|---|---|
+| **Turn it on** | install once (org / all repos) | commit `breachlens.yml` per repo |
+| **Coverage** | every repo, including new ones | only repos with the file |
+| **Where the gate runs** | server-side PR check | your own CI runner |
+| **Works with** | GitHub only | GitHub Actions, GitLab, Jenkins, self-hosted / air-gapped |
+| **In the repo** | nothing | one YAML file to add + maintain |
+
+**Use the GitHub App** for blanket coverage of your GitHub repos — no file, and new repos are gated automatically. **Use a pipeline file** for GitLab / Jenkins, self-hosted or air-gapped runners, or when the gate must run inside your own pipeline. Mixed estates use both — they share the one org policy. The rest of this section covers the pipeline-file path.
+
 **Fastest path — generate a file.** Open **Settings → Integrations → CI/CD pipeline file** and pick your platform, the scan shape, the severity gate, and whether you're behind Cloudflare Access. The generator emits a ready-to-paste file plus the exact secrets to add. Nothing is saved, and no secret value is ever written into the file — it references them by name.
+
+If your org has a **default policy** (Settings → Policies), the severity-gate picker can tie the file to it two ways. **Match** bakes the equivalent fixed severity into the file. **Use my org policy** sets `severity-gate: policy` — instead of counting findings locally, the runner asks BreachLens for the verdict on every run, so the pipeline always follows your *current* policy and can never disagree with the GitHub-App PR check. Change the policy centrally and every pipeline follows it — no file to regenerate.
 
 For **GitHub Actions**, the panel goes a step further: pick a connected repository and it hands you one-click links to commit the pre-filled workflow, mint a scoped token, and open GitHub's secret and branch-protection settings — with your deployment's API URL detected for you. The token still goes into GitHub's own encrypted secret store (a secret value never rides in a URL), so you paste it in the one place it belongs.
 
