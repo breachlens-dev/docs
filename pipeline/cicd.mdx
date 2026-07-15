@@ -58,6 +58,8 @@ Run a scan and turn the result into an **exit code** — `0` passes, `1` fails t
 
 **Fastest path — generate a file.** Open **Settings → Integrations → CI/CD pipeline file** and pick your platform, the scan shape, the severity gate, and whether you're behind Cloudflare Access. The generator emits a ready-to-paste file plus the exact secrets to add. Nothing is saved, and no secret value is ever written into the file — it references them by name.
 
+If your org has a **default policy** (Settings → Policies), the severity-gate picker shows whether the file matches it and offers a one-click align, so generated pipelines stay consistent with org-wide intent. A pipeline file's strictest gate is HIGH — for a stricter policy, the GitHub App enforces it in full on pull requests.
+
 For **GitHub Actions**, the panel goes a step further: pick a connected repository and it hands you one-click links to commit the pre-filled workflow, mint a scoped token, and open GitHub's secret and branch-protection settings — with your deployment's API URL detected for you. The token still goes into GitHub's own encrypted secret store (a secret value never rides in a URL), so you paste it in the one place it belongs.
 
 Prefer to copy from source? The canonical [templates](https://github.com/breachlens-dev/breachlens-action) — one per platform — all share the same trigger → poll → SARIF → severity-gate contract:
