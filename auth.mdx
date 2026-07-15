@@ -136,7 +136,7 @@ For scanning, paste each repo URL on the **Add Repository → By URL** tab and p
 
 ### Small-shop fallback: code host as IdP
 
-If you genuinely have no separate corporate IdP — early-stage commercial shops where GitLab or GitHub *is* your identity store — our Generic OIDC client can point at `https://gitlab.your-company.com` and treat it as the IdP. This works end-to-end (we tested it on aurora).
+If you genuinely have no separate corporate IdP — early-stage commercial shops where GitLab or GitHub *is* your identity store — our Generic OIDC client can point at `https://gitlab.your-company.com` and treat it as the IdP. This works end-to-end — we've validated it against a self-hosted GitLab instance.
 
 Plan to migrate off this when you stand up a real IdP. The OIDC config lifecycle in BreachLens is per-org and per-domain, so swapping providers later is one Settings change.
 
@@ -162,7 +162,8 @@ Two ways to keep the break-glass intact:
 If the break-glass admin loses their MFA factor, an operator with shell access to the api pod can reset it:
 
 ```bash
-kubectl exec -n breachlens deployment/api -- \
+# -n is the namespace you deployed BreachLens into (adjust to match your install)
+kubectl exec -n <namespace> deployment/api -- \
   node --import tsx /app/apps/api/src/cli/break-glass-mfa-reset.ts \
   break-glass@your-company.internal
 ```
