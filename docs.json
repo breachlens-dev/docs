@@ -73,8 +73,8 @@
     "global": {
       "anchors": [
         {
-          "anchor": "Live demo",
-          "href": "https://aurora.breachlens.dev",
+          "anchor": "Book a demo",
+          "href": "mailto:sales@breachlens.app?subject=BreachLens%20live%20demo",
           "icon": "play"
         },
         {
