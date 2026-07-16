@@ -1,8 +1,0 @@
-name = "breachlens-sandbox"
-main = "src/worker.js"
-compatibility_date = "2026-07-01"
-
-# Custom domain. Either uncomment this (the zone breachlens.app must be in this
-# Cloudflare account) and `wrangler deploy`, or add the domain in the dashboard:
-#   Workers & Pages → breachlens-sandbox → Settings → Domains & Routes → Add → Custom domain
-# routes = [{ pattern = "sandbox.breachlens.app", custom_domain = true }]

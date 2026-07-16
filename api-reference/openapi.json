@@ -3,13 +3,9 @@
   "info": {
     "title": "BreachLens API",
     "version": "0.1.0",
-    "description": "Customer-facing scan API for BreachLens — trigger a scan, poll its status, and download SARIF. This is the same surface the `breachlens` CLI and the GitHub Action / GitLab templates drive.\n\n**Base URL:** your own BreachLens deployment (self-hosted or hosted edge). Set the `baseUrl` server variable in the playground to your deployment's full URL (including `https://`).\n\n**Auth:** a scoped API token minted in **Settings → API Tokens** (`scans:trigger` + `scans:read`), sent as `Authorization: Bearer blt_…`. Deployments fronted by Cloudflare Access ALSO require the `CF-Access-Client-Id` / `CF-Access-Client-Secret` service-token headers (optional fields on each request; leave blank for self-hosted).\n\n**Try it now:** the playground defaults to the public **Sandbox (demo)** server — just click **Send** for real findings, no token needed. Switch the Server dropdown to **Your deployment** to hit your own instance (a `blt_` token is then required; a browser/proxy request also cannot clear a Cloudflare Access edge without a service token).\n\n**Flow:** trigger (one target) → poll `GET /api/scans/{scanId}` until `COMPLETED` → download `GET /api/scans/{scanId}/export.sarif`."
+    "description": "Customer-facing scan API for BreachLens — trigger a scan, poll its status, and download SARIF. This is the same surface the `breachlens` CLI and the GitHub Action / GitLab templates drive.\n\n**Base URL:** your own BreachLens deployment (self-hosted or hosted edge). Set the `baseUrl` server variable in the playground to your deployment's full URL (including `https://`).\n\n**Auth:** a scoped API token minted in **Settings → API Tokens** (`scans:trigger` + `scans:read`), sent as `Authorization: Bearer blt_…`. Deployments fronted by Cloudflare Access ALSO require the `CF-Access-Client-Id` / `CF-Access-Client-Secret` service-token headers (optional fields on each request; leave blank for self-hosted).\n\n**Try it:** set the **baseUrl** server variable to your deployment's URL, add a `blt_` token, then click **Send**. (A browser/proxy request cannot clear a Cloudflare Access edge without a service token.)\n\n**Flow:** trigger (one target) → poll `GET /api/scans/{scanId}` until `COMPLETED` → download `GET /api/scans/{scanId}/export.sarif`."
   },
   "servers": [
-    {
-      "url": "https://sandbox.breachlens.app",
-      "description": "Sandbox (demo) — read-only, pre-seeded with a real 17-finding scan. No token needed; just Send."
-    },
     {
       "url": "{baseUrl}",
       "description": "Your deployment",
