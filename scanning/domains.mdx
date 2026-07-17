@@ -54,6 +54,10 @@ On the domain's auth config (admin-gated), configure one of:
 
 Credentials are encrypted at rest and never returned; the config shows only `hasCredentials: true`.
 
+<Note>
+  Scanning a modern SPA behind **Entra ID, Okta, or Auth0 — including apps that enforce MFA** — with a dedicated scanner service account? See the step-by-step [Authenticated scanning (OAuth2 / SSO apps)](/scanning/authenticated-scans) guide.
+</Note>
+
 ### Recorded session
 
 For flows a crawler can't drive, record one:
