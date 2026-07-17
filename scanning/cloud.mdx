@@ -53,12 +53,32 @@ Open **Cloud Accounts → Add account** and pick your provider. You supply **rea
     Click **Run scan**. A posture scan is a single read-only pass over the account's configuration — no agents, nothing deployed into your cloud.
   </Step>
   <Step title="Read the results by framework">
-    Each finding is mapped to the compliance frameworks it affects, so you can filter to "what fails CIS" or "what fails SOC 2" rather than one flat list.
+    Each finding is mapped to the compliance frameworks it affects, so you can filter to "what fails CIS" or "what fails SOC 2" rather than one flat list. Every finding also carries a **risk score** for triage, so you can rank findings within a framework instead of eyeballing severity alone.
   </Step>
 </Steps>
 
 <Note>
   **Kubernetes clusters are a separate target.** Cluster posture (CIS Kubernetes Benchmark) connects a Kubernetes cluster with its own read-only kubeconfig, not a cloud account — add it under **Kubernetes** rather than here.
+</Note>
+
+## Your posture score
+
+Every scanned account gets a single **posture score from 0 to 100** — the share of evaluated configuration checks that pass, weighted by severity so a failed *critical* check pulls the number down far more than a failed *low*. It's the one number you can put in front of leadership: "this account is at 72, up from 61 last month."
+
+<CardGroup cols={3}>
+  <Card title="Only real signal counts" icon="filter">
+    Checks that can't be assessed automatically (manual controls) and ones you've muted don't move the score. An account with nothing yet evaluable shows **no score** rather than a misleading 100.
+  </Card>
+  <Card title="Where you see it" icon="location-dot">
+    On the account's detail header, in the **Cloud Accounts** list so you can rank accounts worst-first, and on the cover of the exported Cloud Posture report.
+  </Card>
+  <Card title="It moves with your cloud" icon="arrow-trend-up">
+    Remediate a critical finding and it climbs; a bucket goes public and it dips. The score reflects the state at the moment of the scan.
+  </Card>
+</CardGroup>
+
+<Note>
+  The posture score measures configuration at the time of the scan — it's a snapshot, not a live gauge. Run posture on a schedule (below) so the trend is what you act on, not a one-off number.
 </Note>
 
 ## Keep it current
