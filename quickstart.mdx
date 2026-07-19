@@ -44,7 +44,7 @@ Before you begin, you must have:
     ```
 
     <Note>
-      The license is verified at api startup. Tampering with it (or running without one) prevents the api from booting. See [License enforcement](/security/license) for the runtime check.
+      The license is verified at api startup. Tampering with it (or running without one) prevents the api from booting. See the [License CLI](/cli#license-cli) to apply or rotate a license.
     </Note>
   </Step>
 
@@ -141,14 +141,14 @@ Before you begin, you must have:
   <Card title="Add a domain target" icon="globe" href="/scanning/domains">
     Run DAST + autonomous pentest against a live web app. Capture proof-of-exploit videos.
   </Card>
-  <Card title="Configure SSO" icon="key" href="/auth/sso">
+  <Card title="Configure SSO & MFA" icon="key" href="/auth">
     Wire Microsoft Entra ID, Okta, Auth0, Google Workspace, or Keycloak. Multi-IdP per org supported.
   </Card>
-  <Card title="Bring your own AI" icon="sparkles" href="/ai/providers">
-    Plug Anthropic, OpenAI, Gemini, or Ollama for auto-fix and finding summarization.
+  <Card title="Report on compliance" icon="clipboard-check" href="/compliance">
+    Map findings to SOC 2, PCI DSS, and the OWASP catalogs, then export an auditor-ready evidence pack.
   </Card>
-  <Card title="Air-gap installation" icon="shield-halved" href="/deployment/airgap">
-    Run BreachLens fully offline. Sync vulnerability databases via signed tarballs over the egress verification pack.
+  <Card title="Fit it into CI/CD" icon="diagram-project" href="/pipeline/cicd">
+    Gate pull requests and pipelines on new Critical/High findings with the BreachLens CLI.
   </Card>
 </CardGroup>
 
