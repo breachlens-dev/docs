@@ -81,9 +81,44 @@ Every scanned account gets a single **posture score from 0 to 100** — the shar
   The posture score measures configuration at the time of the scan — it's a snapshot, not a live gauge. Run posture on a schedule (below) so the trend is what you act on, not a one-off number.
 </Note>
 
+## Remediate a finding
+
+Every finding carries a **Fix** action. Open it and BreachLens generates a ready-to-apply remediation for that exact check, pre-filled with what it already knows about your account.
+
+<Steps>
+  <Step title="Open the fix">
+    Click **Fix** on a finding to open the remediation panel.
+  </Step>
+  <Step title="Pick your format">
+    The same fix is offered three ways — a **CLI** command, a **Terraform** snippet, and click-through **console** steps. Values BreachLens already knows (the subscription or account ID, the region) are auto-filled; you supply the resource-specific placeholders.
+  </Step>
+  <Step title="Review, then apply">
+    Apply the fix in your own tooling. **BreachLens never changes your cloud for you** — it hands you the change to run.
+  </Step>
+</Steps>
+
+<Note>
+  **The generated command is a starting template, not a guarantee.** Read it before you run it: a remediation can create or replace resources, and defaults — for example a new VM's public IP — may need hardening for your environment. You stay in control of the change.
+</Note>
+
+Before you run it, you can ask BreachLens to **review the fix**. The Fix panel's **AI review** gives a second opinion on that exact command — a verdict (safe / caution / risky), what it changes (its blast radius), any new exposure it might introduce, and a short pre-flight checklist of things to confirm first. It's advisory only: it never applies or blocks the fix, and you always read the command yourself.
+
+You don't confirm the fix inside BreachLens — the **next scan does**. Once the underlying check stops failing, the finding [resolves itself](#keep-it-current) on the following posture scan. That re-scan, not the command, is the proof it worked.
+
 ## Keep it current
 
-Cloud drifts constantly — a bucket goes public, someone widens a role. Re-run posture on a schedule so a one-time audit becomes an ongoing control; the per-scan **⇆ Diff** shows exactly what changed since the last run.
+Cloud drifts constantly — a bucket goes public, someone widens a role, a VM is torn down. BreachLens re-scans every connected account **automatically each day**, so drift and remediation are picked up without anyone clicking anything. You can also **Run scan** on demand at any time, and the per-scan **⇆ Diff** shows exactly what changed since the last run.
+
+The daily auto-scan is on by default. To scan an account only on demand — a decommissioned project, or one you audit by hand — turn **Daily auto-scan** off under its **Settings → Automation**. On-demand **Run scan** and the account's stored credentials keep working either way; this only pauses the automatic daily sweep, not the account.
+
+### Findings resolve themselves
+
+Posture findings are **self-resolving**. Each finding tracks a specific misconfiguration *check*, not a point-in-time snapshot — so the first scan after you fix or delete the underlying resource marks the finding **resolved** on its own. Delete a VM and its "password authentication enabled" finding closes; turn on encryption and the "unencrypted disk" finding closes. No manual triage, no stale tickets to chase.
+
+Two things intentionally *don't* clear just because you deleted a resource:
+
+- **Account-level checks** describe the cloud account's own configuration — for example a Microsoft Defender pricing plan left Off — not any single resource. They clear when you change that setting, not when you tear down a VM.
+- **Provider-retained residue.** Some clouds keep a resource's security metadata around briefly after deletion — Azure Defender, for instance, retains a VM's assessment record for a while. A finding backed by that residue clears on a later scan once the provider drops it; BreachLens reports exactly what the cloud still shows, never a guess.
 
 ## Next steps
 
