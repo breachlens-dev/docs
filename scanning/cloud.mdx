@@ -81,6 +81,28 @@ Every scanned account gets a single **posture score from 0 to 100** — the shar
   The posture score measures configuration at the time of the scan — it's a snapshot, not a live gauge. Run posture on a schedule (below) so the trend is what you act on, not a one-off number.
 </Note>
 
+## Remediate a finding
+
+Every finding carries a **Fix** action. Open it and BreachLens generates a ready-to-apply remediation for that exact check, pre-filled with what it already knows about your account.
+
+<Steps>
+  <Step title="Open the fix">
+    Click **Fix** on a finding to open the remediation panel.
+  </Step>
+  <Step title="Pick your format">
+    The same fix is offered three ways — a **CLI** command, a **Terraform** snippet, and click-through **console** steps. Values BreachLens already knows (the subscription or account ID, the region) are auto-filled; you supply the resource-specific placeholders.
+  </Step>
+  <Step title="Review, then apply">
+    Apply the fix in your own tooling. **BreachLens never changes your cloud for you** — it hands you the change to run.
+  </Step>
+</Steps>
+
+<Note>
+  **The generated command is a starting template, not a guarantee.** Read it before you run it: a remediation can create or replace resources, and defaults — for example a new VM's public IP — may need hardening for your environment. You stay in control of the change.
+</Note>
+
+You don't confirm the fix inside BreachLens — the **next scan does**. Once the underlying check stops failing, the finding [resolves itself](#keep-it-current) on the following posture scan. That re-scan, not the command, is the proof it worked.
+
 ## Keep it current
 
 Cloud drifts constantly — a bucket goes public, someone widens a role, a VM is torn down. BreachLens re-scans every connected account **automatically each day**, so drift and remediation are picked up without anyone clicking anything. You can also **Run scan** on demand at any time, and the per-scan **⇆ Diff** shows exactly what changed since the last run.
