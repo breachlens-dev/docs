@@ -107,6 +107,8 @@ You don't confirm the fix inside BreachLens — the **next scan does**. Once the
 
 Cloud drifts constantly — a bucket goes public, someone widens a role, a VM is torn down. BreachLens re-scans every connected account **automatically each day**, so drift and remediation are picked up without anyone clicking anything. You can also **Run scan** on demand at any time, and the per-scan **⇆ Diff** shows exactly what changed since the last run.
 
+The daily auto-scan is on by default. To scan an account only on demand — a decommissioned project, or one you audit by hand — turn **Daily auto-scan** off under its **Settings → Automation**. On-demand **Run scan** and the account's stored credentials keep working either way; this only pauses the automatic daily sweep, not the account.
+
 ### Findings resolve themselves
 
 Posture findings are **self-resolving**. Each finding tracks a specific misconfiguration *check*, not a point-in-time snapshot — so the first scan after you fix or delete the underlying resource marks the finding **resolved** on its own. Delete a VM and its "password authentication enabled" finding closes; turn on encryption and the "unencrypted disk" finding closes. No manual triage, no stale tickets to chase.
