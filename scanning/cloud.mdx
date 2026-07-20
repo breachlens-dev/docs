@@ -83,7 +83,16 @@ Every scanned account gets a single **posture score from 0 to 100** — the shar
 
 ## Keep it current
 
-Cloud drifts constantly — a bucket goes public, someone widens a role. Re-run posture on a schedule so a one-time audit becomes an ongoing control; the per-scan **⇆ Diff** shows exactly what changed since the last run.
+Cloud drifts constantly — a bucket goes public, someone widens a role, a VM is torn down. BreachLens re-scans every connected account **automatically each day**, so drift and remediation are picked up without anyone clicking anything. You can also **Run scan** on demand at any time, and the per-scan **⇆ Diff** shows exactly what changed since the last run.
+
+### Findings resolve themselves
+
+Posture findings are **self-resolving**. Each finding tracks a specific misconfiguration *check*, not a point-in-time snapshot — so the first scan after you fix or delete the underlying resource marks the finding **resolved** on its own. Delete a VM and its "password authentication enabled" finding closes; turn on encryption and the "unencrypted disk" finding closes. No manual triage, no stale tickets to chase.
+
+Two things intentionally *don't* clear just because you deleted a resource:
+
+- **Account-level checks** describe the cloud account's own configuration — for example a Microsoft Defender pricing plan left Off — not any single resource. They clear when you change that setting, not when you tear down a VM.
+- **Provider-retained residue.** Some clouds keep a resource's security metadata around briefly after deletion — Azure Defender, for instance, retains a VM's assessment record for a while. A finding backed by that residue clears on a later scan once the provider drops it; BreachLens reports exactly what the cloud still shows, never a guess.
 
 ## Next steps
 
