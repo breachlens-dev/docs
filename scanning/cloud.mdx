@@ -101,6 +101,8 @@ Every finding carries a **Fix** action. Open it and BreachLens generates a ready
   **The generated command is a starting template, not a guarantee.** Read it before you run it: a remediation can create or replace resources, and defaults — for example a new VM's public IP — may need hardening for your environment. You stay in control of the change.
 </Note>
 
+Before you run it, you can ask BreachLens to **review the fix**. The Fix panel's **AI review** gives a second opinion on that exact command — a verdict (safe / caution / risky), what it changes (its blast radius), any new exposure it might introduce, and a short pre-flight checklist of things to confirm first. It's advisory only: it never applies or blocks the fix, and you always read the command yourself.
+
 You don't confirm the fix inside BreachLens — the **next scan does**. Once the underlying check stops failing, the finding [resolves itself](#keep-it-current) on the following posture scan. That re-scan, not the command, is the proof it worked.
 
 ## Keep it current
