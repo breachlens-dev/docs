@@ -81,6 +81,41 @@ Every scanned account gets a single **posture score from 0 to 100** — the shar
   The posture score measures configuration at the time of the scan — it's a snapshot, not a live gauge. Run posture on a schedule (below) so the trend is what you act on, not a one-off number.
 </Note>
 
+## Remediate a finding
+
+Every finding carries a **Fix** action. Open it and BreachLens generates a ready-to-apply remediation for that exact check, pre-filled with what it already knows about the finding.
+
+<Steps>
+  <Step title="Open the fix">
+    Click **Fix** on a finding to open the remediation panel.
+  </Step>
+  <Step title="Pick your format">
+    The same fix is offered in whatever formats that check ships — a **CLI** command, a **Terraform** or **CloudFormation** snippet, and click-through **console** steps. Values BreachLens already knows — the account or subscription and region — are filled in where the check's template supports them; you supply the resource-specific placeholders.
+  </Step>
+  <Step title="Review, then apply">
+    Apply the fix in your own tooling. **BreachLens never changes your cloud for you** — it hands you the change to run.
+  </Step>
+</Steps>
+
+<Note>
+  **The generated command is a starting template, not a guarantee.** Read it before you run it: a remediation can create or replace resources, and a provider's defaults — a new VM's public IP, an over-broad firewall rule — can quietly widen exposure. You stay in control of the change.
+</Note>
+
+### Before you apply
+
+Every Fix opens with a short **Before you apply** checklist — a deterministic, offline pass over the generated command, with no AI on this path. It surfaces two kinds of note:
+
+- **Hardened** — a change BreachLens *already made* to close a self-inflicting gap in the vendor snippet. The classic is `az vm create`, which provisions a **public IP and open SSH by default**; BreachLens appends the flag that strips the public IP so the "fix" doesn't open a new exposure. Every such change is flagged, so you always see exactly what was altered — never a silent rewrite.
+- **Worth a look** — a gap that's real but too intent-dependent to rewrite automatically, left for you to decide: an OS mismatch between the CLI and the Terraform, ingress from `0.0.0.0/0`, a hardcoded secret, or a legacy managed image where a newer option is preferred.
+
+### AI review
+
+For a deeper second opinion, click **AI review** in the Fix panel. It reads that exact command and returns a verdict — **safe**, **caution**, or **risky** — with what the command changes (its blast radius), any new exposure it might introduce, and a short pre-flight checklist to confirm first. It's **advisory only**: it never applies or blocks the fix, and you always read the command yourself.
+
+Unlike the always-on *Before you apply* checklist, AI review calls your configured AI provider, so it runs on request rather than automatically — one click per fix, when you want it.
+
+You don't confirm the fix inside BreachLens — the **next scan does**. Once the underlying check stops failing, the finding [resolves itself](#keep-it-current) on the following posture scan. That re-scan, not the command, is the proof it worked.
+
 ## Keep it current
 
 Cloud drifts constantly — a bucket goes public, someone widens a role. BreachLens re-scans every connected account **automatically each day** (turn a specific account's daily scan off in its Settings if you'd rather scan it only on demand), so drift and remediation are picked up without anyone clicking; you can also **Run scan** on demand, and the per-scan **⇆ Diff** shows exactly what changed since the last run.
