@@ -36,7 +36,7 @@ Open **Cloud Accounts → Add account** and pick your provider. You supply **rea
 </Tabs>
 
 <Note>
-  **Credentials are supplied as keys today** — an IAM access key, an Azure client secret, or a GCP service-account key. Keyless onboarding (AWS role assumption, GCP Workload Identity Federation, Azure managed identity) is on the roadmap; [tell us](mailto:sales@breachlens.app?subject=BreachLens%20keyless%20cloud%20onboarding) if it's a procurement gate. Rotate the key on your side and re-paste it any time from the account's Settings.
+  **Credentials are supplied as keys today** — an IAM access key, an Azure client secret, or a GCP service-account key. Keyless onboarding (AWS role assumption, GCP Workload Identity Federation, Azure managed identity) is on the roadmap; [tell us](mailto:sales@breachlens.app?subject=BreachLens%20keyless%20cloud%20onboarding) if it's a procurement gate. Rotate the key on your side and re-paste it any time from the account's Settings. The account's identity fields — subscription, tenant, client, account, and project IDs — are editable there too, so a mistyped ID can be corrected in place without removing and re-adding the account.
 </Note>
 
 <Tip>
@@ -83,7 +83,9 @@ Every scanned account gets a single **posture score from 0 to 100** — the shar
 
 ## Keep it current
 
-Cloud drifts constantly — a bucket goes public, someone widens a role. Re-run posture on a schedule so a one-time audit becomes an ongoing control; the per-scan **⇆ Diff** shows exactly what changed since the last run.
+Cloud drifts constantly — a bucket goes public, someone widens a role. BreachLens re-scans every connected account **automatically each day** (turn a specific account's daily scan off in its Settings if you'd rather scan it only on demand), so drift and remediation are picked up without anyone clicking; you can also **Run scan** on demand, and the per-scan **⇆ Diff** shows exactly what changed since the last run.
+
+Findings are **self-resolving** — each one tracks a specific misconfiguration *check*, so the first scan after you fix or delete the underlying resource marks it **resolved** on its own, no manual triage needed. An account's finding count reflects **open** findings only, with resolved ones shown separately, so a falling count reads as progress rather than data quietly disappearing.
 
 ## Next steps
 
