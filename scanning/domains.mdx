@@ -49,10 +49,15 @@ Most of an app lives behind login. BreachLens reaches it two ways — pick by ho
 On the domain's auth config (admin-gated), configure one of:
 
 - **Form login** — login URL, the username/password field names, your credentials, and a logged-in / logged-out text pattern so BreachLens can tell it's still authenticated.
+- **JSON API login (SPA / JWT)** — for apps that authenticate through a JSON API and return a token in the response *body* instead of a `Set-Cookie` — the norm for React, Vue, and Angular single-page apps. Point the login URL at the JSON login endpoint itself (e.g. `/rest/user/login`, **not** the SPA's home page); BreachLens posts your credentials as JSON, reads the token back from the response, and authenticates the whole scan as a bearer.
 - **Bearer / header token** — a header name + value injected on every request.
 - **OAuth2** — token URL, client id/secret, scope, and grant type (`client_credentials` or `password`).
 
 Credentials are encrypted at rest and never returned; the config shows only `hasCredentials: true`.
+
+<Note>
+  **A single-page app needs its API endpoint, not its front door.** A SPA served from `/` returns the same HTML shell for every path, so a login URL pointing at the app root can never authenticate. Use the URL your browser's network tab shows when you actually sign in — a `POST` to something like `/rest/user/login` or `/api/auth/login`. BreachLens tolerates the usual field-name variations (`email`, `username`, `user`, `login`), so a token still comes back even if your config labels the field differently than the API expects.
+</Note>
 
 ### Recorded session
 
@@ -85,6 +90,44 @@ If you recorded a session, promoting it runs the pentest against your captured f
 ## Proof-of-Exploit
 
 DAST is famously noisy. BreachLens's answer is proof: a finding marked **`CONFIRMED`** isn't a maybe — it carries the exact `curl` and wire-level request/response that reproduce it, and for select classes an exploit-replay video. That turns the noisiest stage of testing into the most trustworthy.
+
+Findings carry one of three confidence levels. Only the top one earns the **Proof-of-Exploit** badge:
+
+| Confidence | Meaning |
+|---|---|
+| `POSSIBLE` | A signature or heuristic matched — worth a look, not proven. |
+| `LIKELY` | Strong corroborating signal, but the exploit wasn't run end-to-end. |
+| **`CONFIRMED`** | BreachLens **executed the exploit** and captured the proof. Earns the Proof-of-Exploit badge. |
+
+### A confirmed finding, annotated
+
+Here's a real `CONFIRMED` finding — a **SQL-injection authentication bypass** on a login endpoint. It signs in as a valid user with no valid password by closing the SQL string and commenting out the rest of the query. BreachLens ships the `curl` that runs it:
+
+```bash Reproducer
+curl -sk -X POST https://app.example.com/rest/user/login \
+  -H 'Content-Type: application/json' \
+  --data "{\"email\": \"' OR 1=1--\", \"password\": \"anything\"}"
+```
+
+```json Response — a real session token, from credentials that were never valid
+HTTP/1.1 200 OK
+
+{ "authentication": { "token": "eyJhbGciOiJIUzI1NiJ9…", "umail": "admin@app.example.com" } }
+```
+
+The injected `' OR 1=1--` makes the login query's `WHERE` clause always true and comments out the password check, so the server returns a valid auth token for the first user in the table. A `200` carrying a real token — from credentials that should have been rejected — **is** the exploit, not an inference about one.
+
+Every `CONFIRMED` finding ships three things, and the badge only renders when all three are present:
+
+| Ingredient | What it is | Why it matters |
+|---|---|---|
+| **`curl` reproducer** | The exact command that re-runs the attack | Your engineer reproduces it in one paste — no BreachLens account needed |
+| **Wire evidence** | The real request **and** response that proved it | Takes "is this a false positive?" off the table |
+| **Attack context** | The vulnerable URL, parameter, and payload | Points straight at the code to fix |
+
+<Note>
+  Because the proof is self-contained, a confirmed finding is **portable** — hand the `curl` to a developer, a customer, or an auditor and they verify it themselves. That's the difference between "our scanner flagged this" and "here's the exploit."
+</Note>
 
 ## Next steps
 
