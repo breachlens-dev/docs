@@ -1,0 +1,86 @@
+---
+title: "AI providers (bring your own)"
+description: "Point BreachLens's AI features at your own model — a hosted frontier API, an OpenAI-compatible endpoint, or a fully local model that keeps every prompt inside your network."
+---
+
+BreachLens uses AI for the work that benefits from judgment, not just rules — triaging false positives, summarizing attack paths, drafting remediation, and answering questions about your posture. **You choose the model, and you own the key.** Nothing is hard-wired to a single vendor, and for air-gapped or sovereign deployments the AI can run entirely inside your own network.
+
+<Note>
+  BreachLens ships **no** default API key. AI features stay off until an operator configures at least one provider in **Settings → AI Providers**. Until then, the platform runs its rule-based and tool-based detection normally — the AI layer is additive.
+</Note>
+
+## Supported providers
+
+| Type | Use it for | Requires |
+|---|---|---|
+| **Anthropic** | Claude, hosted by Anthropic | API key |
+| **OpenAI** | GPT models on `api.openai.com` | API key |
+| **Gemini** | Google's hosted Gemini | API key |
+| **Ollama** | A model running locally — **fully offline, air-gappable** | Base URL (no key) |
+| **Custom** | **Any OpenAI-compatible endpoint** — vLLM, DigitalOcean GradientAI, Together, Azure OpenAI, an internal gateway, a sovereign inference host | Base URL + API key + model |
+
+<Tip>
+  **`Custom` is the escape hatch for everything else.** If you run your own model behind an OpenAI-compatible API — or use a regional/sovereign inference provider — pick **Custom**, give it the base URL, key, and model name, and BreachLens talks to it with the OpenAI request shape. This is how you point BreachLens at an on-prem or in-region endpoint without waiting on a first-class integration.
+</Tip>
+
+## Add a provider
+
+<Steps>
+  <Step title="Open AI Providers">
+    Go to **Settings → AI Providers** (admin-gated) and choose **Add provider**.
+  </Step>
+  <Step title="Pick the type and fill in the fields">
+    Select the provider type, then supply:
+
+    - **Default model** — the model name to use (e.g. a Claude, GPT, or Gemini model, or your local model's name).
+    - **API key** — for Anthropic / OpenAI / Gemini / Custom. Ollama needs none. Keys are encrypted at rest and never returned — the config only ever reports `hasCredentials: true`.
+    - **Base URL** — required for **Ollama** and **Custom** (the address of your endpoint). Leave it off the frontier providers, which use their own default host.
+  </Step>
+  <Step title="Save">
+    Once saved, the provider is available to route AI services to.
+  </Step>
+</Steps>
+
+<Warning>
+  For an OpenAI-compatible endpoint that **isn't** `api.openai.com` (a self-hosted vLLM, DigitalOcean GradientAI, etc.), use the **Custom** type — not **OpenAI**. The OpenAI type targets OpenAI's own host; **Custom** is the one that takes an arbitrary base URL.
+</Warning>
+
+## Route each service — and override the model per service
+
+BreachLens's AI-powered features are individually routable. In **Settings → AI Service Routing**, point each service at a provider, and optionally set a **model override** for that service (it falls back to the provider's default model when left blank). Services include false-positive triage, attack-path summaries, remediation drafting, and the **Ask** assistant.
+
+That lets you mix models by sensitivity and cost — for example:
+
+```
+False-positive triage   → local Ollama model      (high volume, keep it in-house)
+Attack-path summaries    → a frontier model         (harder reasoning, worth the spend)
+Remediation drafting     → your OpenAI-compatible gateway
+```
+
+## Keep it in your network
+
+For federal, classified, or data-residency-bound deployments, run the AI where your findings already live:
+
+<CardGroup cols={2}>
+  <Card title="Fully local (Ollama)" icon="server">
+    Point BreachLens at an **Ollama** endpoint inside your cluster. Prompts — including finding details and code context — never leave your network. No third-party model provider is involved.
+  </Card>
+  <Card title="Sovereign / on-prem (Custom)" icon="building-shield">
+    Use **Custom** to reach an in-region or on-prem OpenAI-compatible inference host. You keep control of where inference runs and who can see the data.
+  </Card>
+</CardGroup>
+
+<Note>
+  Every AI call is recorded with its provider, model, and token usage, so operators keep full visibility into what ran and what it cost. Combined with local-only providers, that gives regulated environments an auditable, self-contained AI story.
+</Note>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Sign-in and access control" icon="lock" href="/auth">
+    How operators sign in, the SSO providers, and registration modes.
+  </Card>
+  <Card title="Prove a finding" icon="crosshairs" href="/scanning/domains">
+    See how confirmed findings ship reproducible Proof-of-Exploit.
+  </Card>
+</CardGroup>
