@@ -129,6 +129,23 @@ Every `CONFIRMED` finding ships three things, and the badge only renders when al
   Because the proof is self-contained, a confirmed finding is **portable** — hand the `curl` to a developer, a customer, or an auditor and they verify it themselves. That's the difference between "our scanner flagged this" and "here's the exploit."
 </Note>
 
+## Cutting the noise: AI triage
+
+Not every signature match is real. BreachLens runs an **AI false-positive review** over findings — each is analyzed and tagged with a verdict (*likely real* or *likely false positive*) with the reasoning attached, so you see **why** before you trust it.
+
+For domain (DAST / pentest) findings, a high-confidence *likely false positive* verdict can **auto-dismiss** a finding to keep your active list clean — but never blindly:
+
+- **Severity and class are a hard gate.** A **critical** or **high** finding, or anything in an **injection / exploitation** class (SQL injection, command injection, XSS, path traversal, …), is **never auto-dismissed** on an AI verdict alone — no matter how confident the model is. Only low-stakes hygiene noise (informational / low, non-injection) is eligible to be set aside automatically.
+- **Everywhere else the verdict is advisory.** On other scan tiers the review still runs, but it only annotates — it doesn't hide anything.
+
+### Reveal what was dismissed
+
+Auto-dismissed findings are **hidden, not deleted**. On a domain's **Findings** tab, the **Status** filter brings them back: switch it to show **Ignored** (or **Fixed**) and every finding the review set aside reappears for a second look — verdict and reasoning intact. If the model got one wrong, re-open it in a click.
+
+<Note>
+  BreachLens treats *dismissed* and *deleted* as different things on purpose. An AI verdict can tidy your active queue, but it can never make a finding vanish — the **Status** filter always surfaces the full history, and the severity/class gate means the dangerous classes were never hidden to begin with. A real vulnerability can't be silently buried.
+</Note>
+
 ## Fix at source
 
 A domain finding is observed on a **running URL**, not in a file — so on its own it can't open a code pull request. But when the same application's repository has also been scanned, BreachLens correlates the vulnerable route back to the **source file that backs it**. Open any domain finding and, when a match exists, a **Fix at source** panel appears, showing:
