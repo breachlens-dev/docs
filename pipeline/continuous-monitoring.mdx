@@ -30,15 +30,21 @@ Nothing to schedule — the trigger is the developer's own workflow. This keeps 
 
 ## Scheduled — re-scan on a cadence
 
-Code changes are event-driven, but **posture, container images, and live web apps drift on their own** — a base image gets a new CVE overnight, an admin loosens an org policy. For those, you re-scan on a schedule.
+Code changes are event-driven, but **posture, container images, and live web apps drift on their own** — a base image gets a new CVE overnight, an admin loosens an org policy. For those, you re-scan on a schedule. Two ways, use whichever fits:
 
-BreachLens provides the **trigger** (the [`breachlens` CLI](/cli) and the scan API); you provide the **cadence**, using the scheduler you already run. Scans fired this way are recorded with a `SCHEDULED` trigger type, so you can tell an operator re-scan apart from a PR scan in the history.
+### In BreachLens (built-in scheduler)
 
-<Note>
-  There's no cron to configure *inside* BreachLens today — the schedule lives in your CI or cluster, which keeps it in the same place as the rest of your automation and works in air-gapped installs. Want native in-app scheduling? [Tell us](mailto:sales@breachlens.app?subject=BreachLens%20scheduled%20scans) — it helps us prioritize.
-</Note>
+Every asset's **Scan** tab has a **Scheduled scans** section: set a cadence — a cron expression plus an IANA timezone (e.g. `0 2 * * *` in `America/New_York`) — pick the scan types, and BreachLens runs it for you. It works across every tier: nightly DAST or pentest on a domain, weekly Trivy on a container, daily posture on a cloud or GitHub account, and so on.
 
-Pick whichever scheduler fits your environment:
+To apply one cadence to **many** targets at once, open **Settings → Scan schedules → New schedule**: choose a tier, multi-select the assets, set the cadence, and BreachLens creates one schedule per selected asset. That same page lists every cadence org-wide so you can pause or remove them in one place. Scheduler-fired scans are recorded with a `SCHEDULED` trigger type, so an operator re-scan is distinguishable from a PR scan in the history.
+
+<Warning>
+  A recurring **aggressive** pentest submits real, *mutating* exploit payloads on every run. BreachLens defaults pentest schedules to **Standard** and requires an explicit opt-in before an aggressive cadence can be saved — point those at staging or a disposable-data account, never production.
+</Warning>
+
+### From your own scheduler (CI / cluster)
+
+Prefer to keep the cadence next to the rest of your automation, or run it in an air-gapped install with no browser? Drive scans from your CI or cluster with the [`breachlens` CLI](/cli) — the same `SCHEDULED` trigger type applies. Pick whichever scheduler fits your environment:
 
 <CodeGroup>
 ```yaml GitHub Actions (nightly)
@@ -131,7 +137,7 @@ Continuous monitoring is only useful if the right person hears about it. BreachL
     Install the GitHub App — push/PR scans and merge auto-resolve come for free.
   </Step>
   <Step title="Schedule the drifters">
-    Add a nightly CI job or CronJob that re-runs posture (and container / DAST where relevant) with `--severity-gate none`.
+    Add a **Scheduled scan** on each asset — or set one cadence across many at once from **Settings → Scan schedules** — for nightly posture, container, and DAST. Prefer to run it from your own automation? Use a CI job or CronJob with `--severity-gate none`.
   </Step>
   <Step title="Stream the runtime">
     Deploy runtime sensors so live behavior feeds the same correlation graph.
