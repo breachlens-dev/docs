@@ -129,6 +129,29 @@ Every `CONFIRMED` finding ships three things, and the badge only renders when al
   Because the proof is self-contained, a confirmed finding is **portable** — hand the `curl` to a developer, a customer, or an auditor and they verify it themselves. That's the difference between "our scanner flagged this" and "here's the exploit."
 </Note>
 
+## Fix at source
+
+A domain finding is observed on a **running URL**, not in a file — so on its own it can't open a code pull request. But when the same application's repository has also been scanned, BreachLens correlates the vulnerable route back to the **source file that backs it**. Open any domain finding and, when a match exists, a **Fix at source** panel appears, showing:
+
+- **Where it was observed** — the vulnerable URL, and
+- **The source file and line** it maps to, in the repository that serves the app, with a confidence indicator for the trace.
+
+From there it's the **same one-click flow as a code finding**: generate a unified-diff patch with your configured AI provider, preview it, and open a **real pull request** against that file.
+
+For the trace to appear, three things line up:
+
+| Requirement | Why |
+|---|---|
+| **Same application** | The domain and the repository are grouped under one Application, so only assets that belong together get correlated |
+| **A code match** | The vulnerable route resolves to a scanned **SAST, Secrets, or IaC** finding — a specific file and line a single-file patch can target. Dependency (CVE) findings are package-level and don't qualify. |
+| **Still actionable** | The source finding hasn't already been fixed, ignored, or marked a false positive |
+
+<Note>
+  The link between a URL and a source file is a **heuristic trace** — BreachLens shows the confidence and the reason, and **never opens a PR on its own**. You review the file and the diff first.
+</Note>
+
+**Find them fast.** Domain findings that trace to source carry a **Source fix** badge in the findings list, and the **Source fix** filter isolates them in one click — so you can work the runtime findings that already have a code fix waiting.
+
 ## Next steps
 
 <CardGroup cols={2}>
