@@ -73,6 +73,14 @@ The account detail page surfaces posture three ways:
   Failing and unevaluated are counted separately everywhere — in tiles, per-repo chips, and the "hottest checks" list. A repo with 12 failing checks and 4 unevaluated reads exactly that, never a blended number. This is deliberate: an *unknown* check is a coverage gap to close, not a violation to fix.
 </Note>
 
+## Fixing a failing check
+
+Open any posture finding to see **how** it's remediated. Each check is classified as either an API-flippable setting (branch protection, secret scanning, Dependabot alerts) or a manual fix (a CODEOWNERS or SECURITY.md commit, an org-owner action), with the exact steps in the drawer.
+
+<Note>
+  **Two checks overlap tiers you already run.** GitHub's native **secret scanning** and **Dependabot alerts** detect problems BreachLens already covers — so the drawer says so instead of pushing you to pay twice. Enabling GitHub secret scanning mainly buys you **push protection** (blocking a secret *before* it's committed), and on private repos and GitHub Enterprise Server it's a **paid** feature (GitHub Secret Protection / Advanced Security; it's free on public repos). Turn it on for the prevention, not for detection you already have.
+</Note>
+
 ## Keep it honest over time
 
 Posture drifts — a repo that had branch protection yesterday can lose it today. Re-run posture on a schedule to turn this one-time audit into an ongoing control; the **⇆ Diff** on each scan shows exactly what changed since the last run.
