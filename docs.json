@@ -37,6 +37,12 @@
         ]
       },
       {
+        "group": "Compliance",
+        "pages": [
+          "compliance"
+        ]
+      },
+      {
         "group": "AI & identity",
         "pages": [
           "ai-identity/identities",

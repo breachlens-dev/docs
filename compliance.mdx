@@ -1,0 +1,95 @@
+---
+title: "Compliance reporting"
+description: "Turn findings from every scanner tier into control-by-control coverage against SOC 2, PCI DSS, and the OWASP catalogs — scoped to exactly the application, repo, or account you're being audited on."
+---
+
+Auditors and buyers don't ask "how many findings do you have?" They ask "are you meeting *this control*?" The **Compliance** page answers that question directly: it maps your live findings onto named controls in a framework, shows which controls are satisfied and which have open gaps, and exports the whole thing as an evidence-ready report.
+
+Nothing new to configure — compliance reads the findings your scans already produced. Run your scanners, then open **Compliance**.
+
+## Frameworks
+
+BreachLens ships eight control catalogs, grouped the way you'll reach for them:
+
+| Group | Frameworks |
+|---|---|
+| **OWASP application security** — web + API risks | OWASP Top&nbsp;10 (2021), OWASP Top&nbsp;10 2025, OWASP API Security Top&nbsp;10 2023 |
+| **OWASP AI security** — LLM + agent risks | OWASP LLM Top&nbsp;10 2025, OWASP Agentic Top&nbsp;10 2026 |
+| **OWASP DevSecOps** — pipeline risks | OWASP Top&nbsp;10 CI/CD 2022 |
+| **Trust frameworks** — audit + procurement | SOC&nbsp;2, PCI DSS |
+
+Pick a framework and BreachLens shows every control with an **X of Y controls covered** headline, a per-control table (which findings satisfy it, severity, the rule that fired), and an honest empty state for any control nothing maps to yet.
+
+## Coverage spans every scanner tier
+
+A control is rarely satisfied by one kind of finding. SOC 2 change-management wants to see branch protection *and* pipeline hygiene; an OWASP CI/CD control wants secrets hygiene *and* dependency integrity. So compliance draws from **all** your scan tiers at once:
+
+<CardGroup cols={2}>
+  <Card title="Code" icon="code">
+    SAST, SCA, secrets, and IaC findings from your repositories.
+  </Card>
+  <Card title="Cloud & container" icon="cloud">
+    Cloud posture (CSPM) and container image findings.
+  </Card>
+  <Card title="Web & API" icon="globe">
+    DAST and full-pentest findings from your domains.
+  </Card>
+  <Card title="Platform posture" icon="shield-halved">
+    GitHub posture, AI-security, and MCP-server findings.
+  </Card>
+</CardGroup>
+
+<Note>
+  **Cloud posture and GitHub posture now feed the trust frameworks.** Earlier, only code-side findings mapped cleanly onto controls, so a SOC 2 report scored mostly on SAST/SCA. Cloud (CSPM) and GitHub-posture findings — MFA enforcement, public-access exposure, flow-logging, branch protection, required reviewers, signed commits, and the like — now contribute to **SOC 2** and **OWASP CI/CD** controls. The result is a materially fuller picture from the same scans you were already running.
+</Note>
+
+## Scope a report to the system under audit
+
+An org-wide report answers "how are we doing overall." An **audit** almost always asks about one system. Scope the report with the boundary picker so it reflects exactly that system and nothing else:
+
+| Scope | What it covers |
+|---|---|
+| **Application** | Every asset assigned to the application — its repos, containers, domains, cloud accounts, and GitHub accounts — evaluated as one boundary. |
+| **Repository** | A single code repository. |
+| **Container** | A single container image. |
+| **Domain** | A single web target (DAST / pentest). |
+| **Cloud account** | One connected AWS / Azure / GCP account. |
+| **GitHub account** | A whole GitHub org or user account. |
+| **GitHub repo** | **One repository's** posture, on its own. |
+| **AI agents** | AI-security findings for a specific agent. |
+
+<Note>
+  **For GitHub posture, prefer the per-repo scope when auditing one system.** A GitHub *account* rolls up every repository the org owns, so scoping a report to the account blends the audited service with everything else in the org. The **GitHub repo** scope pins the report to a single `owner/repo`, which is the accurate boundary for "is *this* service's source configuration meeting the control." See [Scan GitHub posture](/scanning/github-posture#filter-posture-to-a-single-repository).
+</Note>
+
+## Read and export the report
+
+<Steps>
+  <Step title="Pick a framework and scope">
+    Choose the catalog (e.g. **SOC 2**) and, if this is for an audit, set the boundary to the application or repo in question.
+  </Step>
+  <Step title="Work the gaps">
+    Each control shows the findings that satisfy it and the open gaps that don't. Controls with nothing mapped are flagged honestly rather than shown as passing.
+  </Step>
+  <Step title="Compare to a prior period">
+    The **diff** view shows what changed since a previous report — newly covered controls, regressions, and new gaps — so you can demonstrate trend, not just a snapshot.
+  </Step>
+  <Step title="Export to PDF">
+    Export the report as a PDF evidence pack, with a cover page naming the scope, a per-control breakdown, and a content hash + page numbers in the footer for audit integrity.
+  </Step>
+</Steps>
+
+<Warning>
+  Compliance reflects your **most recent** findings. A control only stays satisfied while the evidence behind it is current — re-scan on a schedule (see [Continuous monitoring](/pipeline/continuous-monitoring)) so an audit-day report isn't resting on stale results.
+</Warning>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Scan GitHub posture" icon="github" href="/scanning/github-posture">
+    Branch protection, required reviewers, and org settings — the posture findings that feed SOC 2 and OWASP CI/CD, filterable per repo.
+  </Card>
+  <Card title="Scan cloud posture" icon="cloud" href="/scanning/cloud">
+    CSPM across AWS / Azure / GCP — the misconfiguration findings that feed the trust frameworks.
+  </Card>
+</CardGroup>

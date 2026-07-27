@@ -73,6 +73,17 @@ The account detail page surfaces posture three ways:
   Failing and unevaluated are counted separately everywhere — in tiles, per-repo chips, and the "hottest checks" list. A repo with 12 failing checks and 4 unevaluated reads exactly that, never a blended number. This is deliberate: an *unknown* check is a coverage gap to close, not a violation to fix.
 </Note>
 
+## Filter posture to a single repository
+
+A posture scan covers the whole account, but you'll often want to look at one repository at a time — to hand its owner just their gaps, or to audit one service. Posture findings carry the repository they came from, so you can narrow to it two ways:
+
+- **On the Findings page**, use the **Repository** filter to show only the checks failing on one `owner/repo`. It composes with the account and severity filters, so "high-severity posture gaps on `acme/payments`" is one selection.
+- **From the account's Linked repositories panel**, click a repo to jump straight to its posture findings, pre-filtered.
+
+<Note>
+  This per-repo boundary also drives compliance. When you're audited on a single service, scope its [compliance report](/compliance) to that one **GitHub repo** rather than the whole account — the account rolls up every repo the org owns, which blends the audited service with everything else. See [Compliance reporting](/compliance#scope-a-report-to-the-system-under-audit).
+</Note>
+
 ## Keep it honest over time
 
 Posture drifts — a repo that had branch protection yesterday can lose it today. Re-run posture on a schedule to turn this one-time audit into an ongoing control; the **⇆ Diff** on each scan shows exactly what changed since the last run.
