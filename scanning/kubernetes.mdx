@@ -39,6 +39,18 @@ The scan can only see what the kubeconfig's identity is allowed to read. Point i
   </Step>
 </Steps>
 
+## Managed clusters — partial coverage is surfaced, never hidden
+
+On a **managed control plane** (EKS, AKS, GKE, DOKS) you don't own the master nodes, so the benchmark's control-plane and kubelet-file checks — roughly 50 of them — can't be evaluated from a kubeconfig. The scanner runs them but can't read files it has no access to, so it returns them as **not evaluated** rather than pass or fail.
+
+BreachLens treats *not evaluated* as **unknown, not clean**. A managed-cluster scan finishes as **Completed with warnings** with coverage marked **Reduced**, and an informational finding — *"N checks could not be evaluated"* — lists exactly which controls were skipped. A cluster that's genuinely clean and one where half the benchmark couldn't run never look the same.
+
+<Note>
+  A passing managed-cluster scan confirms the checks that **did** run (RBAC, core workload settings, and any control-plane checks your identity can reach) — it does **not** certify the control-plane and kubelet controls that came back not-evaluated. For those, use your cloud provider's own managed-cluster checks in the [Cloud posture](/scanning/cloud) tier.
+</Note>
+
+Self-managed clusters — where the scanner can reach the master nodes — evaluate the full benchmark and report **Complete** coverage.
+
 ## Keep it current
 
 A cluster drifts as workloads and RBAC change. Re-run the benchmark on a schedule to catch regressions; the per-scan **⇆ Diff** shows exactly what changed since the last run.
