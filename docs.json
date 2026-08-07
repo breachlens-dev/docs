@@ -77,11 +77,6 @@
           "anchor": "Book a demo",
           "href": "mailto:sales@breachlens.app?subject=BreachLens%20live%20demo",
           "icon": "play"
-        },
-        {
-          "anchor": "GitHub",
-          "href": "https://github.com/breachlens-dev",
-          "icon": "github"
         }
       ]
     }
@@ -114,11 +109,5 @@
       "cursor",
       "vscode"
     ]
-  },
-  "footer": {
-    "socials": {
-      "github": "https://github.com/breachlens-dev",
-      "linkedin": "https://linkedin.com/company/breachlens"
-    }
   }
 }
