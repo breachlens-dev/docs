@@ -142,7 +142,7 @@ Two shapes belong on different triggers — the generator produces the right one
 
 The build stage pulls in third-party code and ships an artifact. BreachLens secures both:
 
-- **SCA** — known-vulnerability + license analysis across common package ecosystems, with **function-level reachability** so you patch what's actually called first
+- **SCA** — known-vulnerability + license analysis across common package ecosystems, with **function-level reachability** on supported languages so you patch what's actually called first
 - **IaC** — Terraform / Kubernetes / CloudFormation / Helm misconfiguration analysis
 - **Container image scanning** — CVE detection on built images, with reachability tiering
 - **Signed SBOM** — CycloneDX / SPDX bill of materials, cosign-compatible for procurement evidence
@@ -153,7 +153,7 @@ Once built, the running app is tested from the outside in — the noisiest stage
 
 - **DAST** — outside-in active scanning (XSS, injection, CSRF, XXE, auth/session flaws), with authenticated form-login and recorded-session modes
 - **Autonomous pentest** — multi-tool exploit orchestration that goes beyond detection to exploitation
-- **Proof-of-Exploit** — a `CONFIRMED` finding ships a reproducible `curl` + wire-level Request/Response, and for select classes an exploit-replay video. A confirmed finding is never a "maybe."
+- **Proof-of-Exploit** — a `CONFIRMED` finding ships wire-level Request/Response evidence, with a reproducible `curl` or, for browser-driven exploits, an exploit-replay video. A confirmed finding is never a "maybe."
 
 ### Deploy / Run — runtime and posture
 
@@ -173,4 +173,4 @@ Honest scoping matters in a security evaluation. Three capabilities from the cla
 | **RASP** (in-app runtime blocking) | Also runs inside the app process. BreachLens's deploy-stage coverage is **detection** (host / workload sensors), not in-app self-protection. |
 | **Just-in-time privileged access** | BreachLens has role / capability / scope-based access control, but not time-boxed "grant for 1 hour" elevation. |
 
-For the self-hosted, air-gappable, regulated lane BreachLens leads with, the runtime-detection tier and external-scan model cover the practical need.
+For the self-hosted, regulated lane BreachLens leads with — deployable in disconnected networks — the runtime-detection tier and external-scan model cover the practical need.

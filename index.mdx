@@ -1,9 +1,9 @@
 ---
 title: "BreachLens"
-description: "Self-hosted application security that proves which findings are exploitable — every scanner class, correlated into attack paths, with auto-fix you review. Air-gap capable."
+description: "Self-hosted application security that proves which findings are exploitable — every scanner class, correlated into attack paths, with auto-fix you review. Runs inside your own perimeter; bring your own AI model."
 ---
 
-BreachLens is the application security platform you can run inside your own perimeter. It runs every major scanner class, proves which findings are actually exploitable, correlates them across tiers into proof-of-exploit attack chains, and generates auto-fix pull requests with your own model keys — fully air-gapped for federal and regulated workloads.
+BreachLens is the application security platform you can run inside your own perimeter. It runs every major scanner class, proves which findings are actually exploitable, correlates them across tiers into proof-of-exploit attack chains, and generates auto-fix pull requests with your own model keys — all inside your own network, with disconnected deployment supported once you provision offline mirrors for the scanner rules and vulnerability data.
 
 <CardGroup cols={2}>
   <Card title="Book a live demo" icon="play" href="mailto:sales@breachlens.app?subject=BreachLens%20live%20demo">
@@ -27,13 +27,13 @@ BreachLens is the application security platform you can run inside your own peri
     A SAST finding in `payments-api` plus a container CVE plus a public DAST endpoint becomes one chain. Break one link, break the chain.
   </Card>
   <Card title="Proof-of-exploit video" icon="video">
-    Pentest findings that actually exploit get a replayable video. PR-grade evidence, not just a CVE number.
+    Browser-drivable exploits get a replayable video where available — PR-grade evidence, not just a CVE number.
   </Card>
   <Card title="Function-level reachability" icon="crosshairs">
-    SCA findings tagged with whether the vulnerable function is actually reachable from your code. Stops you patching CVE-2024-X in a transitive dep no one calls.
+    For supported ecosystems, SCA findings are tagged with whether the vulnerable function is reachable from your code (coverage varies by language). Stops you patching CVE-2024-X in a transitive dep no one calls.
   </Card>
-  <Card title="Air-gappable" icon="shield-halved">
-    Every component runs offline. No telemetry phones home. Customer-pulls-vendor-never-pushes update model. Built for federal, financial, healthcare, defense.
+  <Card title="Air-gap deployable" icon="shield-halved">
+    Your code, findings, and AI inference never leave your network, and no telemetry phones home. For fully disconnected networks, provision offline mirrors for the scanner rules and vulnerability data (customer-pulls, vendor-never-pushes). Built for federal, financial, healthcare, defense.
   </Card>
 </CardGroup>
 
@@ -41,10 +41,10 @@ BreachLens is the application security platform you can run inside your own peri
 
 BreachLens is built for **AppSec engineers**, **DevSecOps leads**, **CISOs**, and **security architects** at mid-market and enterprise organizations who need:
 
-- A unified pipeline that replaces 5+ point tools (Snyk + Trivy + Checkov + ZAP + Burp + Pentera + Wiz)
+- A unified platform that consolidates SCA, container, IaC, DAST, cloud-posture and pentest into one pipeline (it embeds engines like Trivy and OWASP ZAP)
 - Self-hosted deployment with no vendor data exfiltration
 - Auto-fix automation that doesn't lock them into one AI vendor
-- Compliance reporting (SOC 2, ISO 27001, OWASP Top 10, FedRAMP)
+- Compliance reporting (SOC 2, PCI DSS, and the OWASP Top 10 / API / LLM / CI-CD catalogs)
 - Cross-tier evidence for the actual exploits that matter
 
 <Note>

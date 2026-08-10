@@ -47,13 +47,15 @@ Once agents report, BreachLens polls the manager continuously and turns alerts i
 |---|---|
 | **Behavior** | Syscall / process activity, file-integrity changes, command execution, network connections |
 | **Vulnerabilities** | Packages on the running host flagged against vulnerability databases |
-| **Dashboard rollups** | MITRE ATT&CK tactics, top attacker IPs, and compliance framework coverage |
+| **Dashboard rollups** | MITRE ATT&CK tactics, top attacker IPs, and compliance rule tags where the sensor provides them |
 
 The **cross-tier vulnerability view** lines up CVEs found in a container image at build time against CVEs the sensor sees on the running host — so you can tell *present in the image* from *live on the box*.
 
 ## Egress verification
 
-Alongside detection, the **egress verification pack** aggregates network flow and TLS events into a "what did this actually talk to" record, each destination marked **documented**, **unknown**, or **anomaly** — the procurement-grade evidence that an air-gapped or egress-restricted deployment is behaving.
+<Note>
+  **On the roadmap.** An egress-verification pack — aggregating network flow and TLS events into a "what did this actually talk to" record, each destination marked **documented**, **unknown**, or **anomaly** as procurement-grade evidence that an egress-restricted deployment is behaving — is in development, not yet shipped. [Tell us](mailto:sales@breachlens.app?subject=BreachLens%20egress%20verification) if it's a procurement gate.
+</Note>
 
 ## Where it fits
 

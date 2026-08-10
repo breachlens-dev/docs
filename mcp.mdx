@@ -101,6 +101,6 @@ When this ships, the same probes BreachLens runs against third-party MCP servers
 
 MCP is the connector layer for the next generation of AI workflows. The security audit hasn't caught up with the AI-agent revolution yet, which means most operators are wiring agents into production tools with no visibility into prompt-injection, tool-poisoning, or token-theft risk. BreachLens treats every MCP server you register as the same kind of asset as a repository or a domain - inventoried, scanned, correlated, and reported - so the agent attack surface lands in the same triage flow your AppSec team already runs.
 
-For federal and regulated workloads, all ten probes run fully air-gapped. The four LLM-judged probes call your configured AI provider, which can be an internal Ollama or vLLM endpoint — nothing leaves your perimeter.
+For regulated and disconnected environments, MCP scan data stays inside your network — the four LLM-judged probes call your configured AI provider, which can be an internal Ollama or vLLM endpoint, so no findings or evidence leave your perimeter. A fully disconnected deployment still needs offline provisioning for the rest of the platform's scanner data.
 
 Need help wiring up your first MCP server or scoping a federal deployment? Reach out at [sales@breachlens.app](mailto:sales@breachlens.app).

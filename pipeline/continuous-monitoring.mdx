@@ -105,7 +105,7 @@ Every scan in a target's **Scans** tab has a **⇆ Diff** button. It compares a 
 Code and config are scanned; the running system is **watched**. BreachLens's runtime tier streams events continuously rather than on a cadence:
 
 - **Runtime sensors** — host + workload agents emit syscall, file-integrity, command-exec, network, and vulnerability events into the same correlation graph.
-- **Egress verification** — network flow + TLS events are aggregated into hourly summaries, the procurement-grade "what did this actually talk to" record.
+- **Egress verification** *(roadmap)* — aggregating network flow + TLS events into a "what did this actually talk to" record; in development, not yet shipped.
 
 These feed the same engine as every scan tier, so a runtime alert on a workload can chain to the code finding and cloud misconfiguration behind it as one scored attack path.
 

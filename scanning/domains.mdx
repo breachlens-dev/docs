@@ -6,7 +6,7 @@ description: "Run DAST and an autonomous pentest against a running application �
 Where code scanning reads your source, **domain scanning tests the running application from the outside in** — the way an attacker sees it. Two tiers share one target:
 
 - **DAST** — fast active scanning for XSS, injection, CSRF, XXE, and auth/session flaws.
-- **Autonomous pentest** — multi-tool exploit orchestration that goes past detection to *exploitation*, and ships **Proof-of-Exploit** (a reproducible `curl` + the exact request/response, and for select classes a replay video).
+- **Autonomous pentest** — multi-tool exploit orchestration that goes past detection to *exploitation*, and ships **Proof-of-Exploit**: the exploited request and response, with a reproducible `curl` or a replay video depending on the exploit class.
 
 ## Add a domain
 
@@ -89,7 +89,7 @@ If you recorded a session, promoting it runs the pentest against your captured f
 
 ## Proof-of-Exploit
 
-DAST is famously noisy. BreachLens's answer is proof: a finding marked **`CONFIRMED`** isn't a maybe — it carries the exact `curl` and wire-level request/response that reproduce it, and for select classes an exploit-replay video. That turns the noisiest stage of testing into the most trustworthy.
+DAST is famously noisy. BreachLens's answer is proof: a finding marked **`CONFIRMED`** isn't a maybe — it carries the wire-level request/response that proves it, with a reproducible `curl` or, for browser-driven exploits, an exploit-replay video. That turns the noisiest stage of testing into the most trustworthy.
 
 Findings carry one of three confidence levels. Only the top one earns the **Proof-of-Exploit** badge:
 
@@ -117,7 +117,7 @@ HTTP/1.1 200 OK
 
 The injected `' OR 1=1--` makes the login query's `WHERE` clause always true and comments out the password check, so the server returns a valid auth token for the first user in the table. A `200` carrying a real token — from credentials that should have been rejected — **is** the exploit, not an inference about one.
 
-Every `CONFIRMED` finding ships three things, and the badge only renders when all three are present:
+A fully reproducible `CONFIRMED` finding ships three things:
 
 | Ingredient | What it is | Why it matters |
 |---|---|---|
