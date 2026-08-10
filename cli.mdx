@@ -171,29 +171,11 @@ npx @breachlens/cli scan --repo my-org/my-service --severity-gate none
 ```
 </CodeGroup>
 
----
+## Licensing
 
-## License CLI
+Applying, verifying, and issuing BreachLens licenses — including the vendor-side
+`scripts/license/issue-license.ts` pipeline — has its own page.
 
-Separate from the scan CLI, the license-issuance pipeline ships in the install bundle
-at `scripts/license/issue-license.ts` (runs under `tsx`). It produces a customer-ready
-bundle: a printable HTML cover + install guide + JWT + EULA, a raw `.jwt` for env-var
-workflows, a standalone EULA for legal review, and an append-only CSV ledger row.
-
-```bash
-pnpm tsx scripts/license/issue-license.ts \
-  --customer acme-corp \
-  --customer-display-name "Acme Corp" \
-  --contact-email security@acme.com \
-  --tier MID --days 365 --seats 50
-```
-
-<Note>
-  The signing keypair must exist at `scripts/license/keys/` first — generate it once
-  per release line with `pnpm tsx scripts/license/generate-keypair.ts`. Treat
-  `out/licenses/` as confidential; it holds real signed licenses.
-</Note>
-
-Applying a license (rather than issuing one): **Settings → Operations → License → Apply
-license**, or set `LICENSE_KEY` on the api container and restart. Verification is fully
-offline via the embedded ed25519 public key — no call to BreachLens infrastructure.
+<Card title="Licensing" icon="key" href="/deployment/licensing">
+  Apply a license (operator), understand what the runtime check does, and issue one (vendor).
+</Card>

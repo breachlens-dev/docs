@@ -5,6 +5,10 @@ description: "Drive BreachLens from CI pipelines, scripts, and custom dashboards
 
 Every surface in the BreachLens web UI is backed by the same REST API mounted at `https://<your-install>/api/*`. CI runners, internal scripts, and bespoke dashboards authenticate with a long-lived bearer token minted in **Settings** -> **API Tokens**.
 
+<Note>
+  The **API playground** in the sidebar covers the **scan endpoints** — trigger, status, and SARIF export — generated from the OpenAPI spec. This page stays the canonical reference for everything else: the findings API, the SSE progress stream, rate limits, and the full error table, none of which the playground includes.
+</Note>
+
 <Tip>
   If you're integrating with VS Code instead, the IDE extension handles auth for you. See the [VS Code guide](/ide/vscode).
 </Tip>
@@ -221,12 +225,12 @@ A machine-readable **OpenAPI 3.1** spec covers the scan endpoints — trigger, s
 
 ## Next steps
 
-<CardGroup cols={2}>
+<CardGroup cols={3}>
   <Card title="VS Code extension" icon="code" href="/ide/vscode">
     Use BreachLens from inside your editor. No token wiring needed.
   </Card>
-  <Card title="MCP server" icon="plug" href="/mcp">
-    Wrap BreachLens for AI agents and chat-driven workflows.
+  <Card title="BreachLens as an MCP server" icon="plug" href="/mcp">
+    Roadmap — expose findings and scans to your AI agents natively.
   </Card>
   <Card title="Need help?" icon="envelope" href="mailto:sales@breachlens.app">
     Email the team. Every licensed customer gets a dedicated channel.
