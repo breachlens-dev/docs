@@ -53,7 +53,7 @@ Before you begin, you must have:
     docker compose up -d
     ```
 
-    First boot takes ~3 minutes (image pulls + Prisma migrate + scanner warm-up). Watch the logs until the api healthcheck flips to `healthy`:
+    First boot takes ~3 minutes (image pulls + database migrations + scanner warm-up). Watch the logs until the api healthcheck flips to `healthy`:
 
     ```bash
     docker compose logs -f api
