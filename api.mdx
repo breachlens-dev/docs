@@ -151,7 +151,7 @@ curl -X POST "https://breachlens.example.com/api/scans/from-github" \
 }
 ```
 
-The scan runs asynchronously on the BullMQ worker pool. Poll the status endpoint or subscribe to the SSE stream at `GET /api/scans/:id/events` for live progress.
+The scan runs asynchronously on the worker pool. Poll the status endpoint or subscribe to the SSE stream at `GET /api/scans/:id/events` for live progress.
 
 <Note>
   To trigger a scan against a repository already known to BreachLens, `POST /api/repos/:id/scan` with the same body shape (minus `githubFullName`). The repo route requires the `scans:trigger` scope plus DEVELOPER role or higher.
