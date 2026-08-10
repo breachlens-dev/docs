@@ -53,7 +53,7 @@ On the domain's auth config (admin-gated), configure one of:
 - **Bearer / header token** — a header name + value injected on every request.
 - **OAuth2** — token URL, client id/secret, scope, and grant type (`client_credentials` or `password`).
 
-Credentials are encrypted at rest and never returned; the config shows only `hasCredentials: true`.
+Credentials are encrypted at rest and never returned; the config only shows whether credentials are set, never the values themselves.
 
 <Note>
   **A single-page app needs its API endpoint, not its front door.** A SPA served from `/` returns the same HTML shell for every path, so a login URL pointing at the app root can never authenticate. Use the URL your browser's network tab shows when you actually sign in — a `POST` to something like `/rest/user/login` or `/api/auth/login`. BreachLens tolerates the usual field-name variations (`email`, `username`, `user`, `login`), so a token still comes back even if your config labels the field differently than the API expects.
@@ -71,7 +71,7 @@ For flows a crawler can't drive, record one:
     Log in and walk the app — the authenticated pages, the multi-step forms, the endpoints you care about. A live pane shows captured requests; a self-test flags if capture isn't working before you invest time.
   </Step>
   <Step title="Scan or promote to pentest">
-    Scan the recorded URLs directly, or **Promote to full pentest** to run the deep engine over exactly what you recorded.
+    Scan the recorded URLs directly, or **Promote to full pentest** to run it over exactly what you recorded.
   </Step>
 </Steps>
 
@@ -112,7 +112,12 @@ curl -sk -X POST https://app.example.com/rest/user/login \
 ```json Response — a real session token, from credentials that were never valid
 HTTP/1.1 200 OK
 
-{ "authentication": { "token": "eyJhbGciOiJIUzI1NiJ9…", "umail": "admin@app.example.com" } }
+{
+  "authentication": {
+    "token": "eyJhbGciOiJIUzI1NiJ9…",
+    "umail": "admin@app.example.com"
+  }
+}
 ```
 
 The injected `' OR 1=1--` makes the login query's `WHERE` clause always true and comments out the password check, so the server returns a valid auth token for the first user in the table. A `200` carrying a real token — from credentials that should have been rejected — **is** the exploit, not an inference about one.
