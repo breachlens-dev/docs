@@ -5,7 +5,7 @@
   "description": "Self-hosted DevSecOps — 9 scanner tiers, multi-AI auto-fix, cross-tier attack-path correlation, air-gappable for federal.",
   "colors": {
     "primary": "#1D4ED8",
-    "light": "#2563EB",
+    "light": "#3B82F6",
     "dark": "#1E40AF"
   },
   "appearance": {
