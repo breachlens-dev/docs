@@ -40,11 +40,11 @@ Before you begin, you must have:
 
     ```bash
     cp .env.example .env
-    echo "LICENSE_JWT=eyJhbGciOiJSUzI1NiIs..." >> .env
+    echo "LICENSE_KEY=eyJhbGciOiJFZERTQSIs..." >> .env
     ```
 
     <Note>
-      The license is verified at api startup. Tampering with it (or running without one) prevents the api from booting. See [License enforcement](/security/license) for the runtime check.
+      The license is verified at api startup against an embedded public key — no call home. Without a valid license the api still boots, but premium features stay disabled until you apply one. See [Licensing](/deployment/licensing) for exactly what's gated and how to apply a license.
     </Note>
   </Step>
 
@@ -70,19 +70,19 @@ Before you begin, you must have:
     You'll see a banner like:
 
     ```
-    ╔══════════════════════════════════════════════════════════════════════════╗
-    ║   BreachLens · first-boot setup                                          ║
-    ║   Open the web UI and visit /setup, then paste:                          ║
-    ║   blnx_setup_9f2c…                                                        ║
-    ║   Expires: 2026-07-09T12:00:00.000Z                                      ║
-    ╚══════════════════════════════════════════════════════════════════════════╝
+    BreachLens · first-boot setup
+    Open the web UI, visit /setup, and paste this token:
+
+      blnx_setup_9f2c…
+
+    Expires: 2026-07-09T12:00:00.000Z
     ```
 
     Open [https://localhost:5173/setup](https://localhost:5173/setup), paste the token, and fill in your name, work email, a strong password, your **organization name**, and your **primary email domain** (e.g. `acme.com`). Submitting creates the first **owner** account — a break-glass admin on a fresh team workspace.
 
-    <Note>
+    <Warning>
       **Accept the certificate on both ports.** With the default self-signed cert, your browser has to trust **both** `https://localhost:5173` (web) **and** `https://localhost:3000/health` (api) — the setup form posts to the api on port `3000`, and an untrusted cert there makes the submit fail silently. Open each URL once, accept the warning, then return to `/setup`.
-    </Note>
+    </Warning>
 
     <Note>
       The setup token works **once** and expires after **24 hours**. To print a fresh one, restart the api: `docker compose restart api`. Once the first account exists, `/setup` closes permanently — there's no second break-glass admin by design.
@@ -141,13 +141,13 @@ Before you begin, you must have:
   <Card title="Add a domain target" icon="globe" href="/scanning/domains">
     Run DAST + autonomous pentest against a live web app. Capture proof-of-exploit videos.
   </Card>
-  <Card title="Configure SSO" icon="key" href="/auth/sso">
+  <Card title="Configure SSO" icon="key" href="/auth">
     Wire Microsoft Entra ID, Okta, Auth0, Google Workspace, or Keycloak. Multi-IdP per org supported.
   </Card>
-  <Card title="Bring your own AI" icon="sparkles" href="/ai/providers">
+  <Card title="Bring your own AI" icon="sparkles" href="/ai-providers">
     Plug Anthropic, OpenAI, Gemini, or Ollama for auto-fix and finding summarization.
   </Card>
-  <Card title="Air-gap installation" icon="shield-halved" href="/deployment/airgap">
+  <Card title="Air-gap installation" icon="shield-halved" href="/deployment/air-gap">
     Deploy in a disconnected network. Your code, findings, and AI inference stay in your network; provision offline mirrors for the scanner rules and vulnerability data.
   </Card>
 </CardGroup>
