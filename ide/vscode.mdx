@@ -71,7 +71,7 @@ The extension ships as a signed `.vsix` today. A VS Code Marketplace listing is 
   </Step>
 
   <Step title="Map workspace folders to BreachLens repos">
-    Auto-detection reads `git remote get-url origin` for each workspace folder and matches against `Repository.url` in BreachLens. Folders whose remote matches are auto-mapped.
+    Auto-detection reads `git remote get-url origin` for each workspace folder and matches against the repo's registered clone URL in BreachLens. Folders whose remote matches are auto-mapped.
 
     When auto-detection misses (forks, mirrors, monorepo subdirs, non-canonical clone URLs), Command Palette → **Select BreachLens repo for current workspace folder** and pick from the quickpick. The override is stored per-workspace.
   </Step>
@@ -92,7 +92,6 @@ The extension ships as a signed `.vsix` today. A VS Code Marketplace listing is 
 
 All settings live under the `breachlens.*` namespace. Edit them in `settings.json` or via `File → Preferences → Settings`.
 
-<CodeGroup>
 ```jsonc settings.json
 {
   // Set via "Connect to BreachLens" - do not edit by hand unless the URL changed.
@@ -118,7 +117,6 @@ All settings live under the `breachlens.*` namespace. Edit them in `settings.jso
   "breachlens.scanOnSave.debounceSeconds": 2
 }
 ```
-</CodeGroup>
 
 The API token itself is never stored in `settings.json`. Run **BreachLens: Disconnect** to wipe it from SecretStorage.
 
@@ -147,25 +145,27 @@ The extension uses only the public VS Code extension API, so it sideloads cleanl
 
 ## Troubleshooting
 
-<Warning>
-  **"BreachLens: not connected" persists after Connect.** Common causes: wrong API URL (typo, `http` vs `https`), token revoked or never created, network blocking the API host, or a self-signed TLS cert that Node does not trust. For corporate CAs, set `NODE_EXTRA_CA_CERTS` in your VS Code environment.
-</Warning>
+<AccordionGroup>
+  <Accordion title='"BreachLens: not connected" persists after Connect'>
+    Common causes: wrong API URL (typo, `http` vs `https`), token revoked or never created, network blocking the API host, or a self-signed TLS cert that VS Code does not trust. For corporate CAs, set `NODE_EXTRA_CA_CERTS` in your VS Code environment.
+  </Accordion>
 
-<Warning>
-  **"BreachLens: license required" toast.** The server-side license check failed. Your BreachLens admin needs to set `LICENSE_PUBLIC_KEY` and `LICENSE_KEY` on the api and restart it. Verify with `curl -sf -H "Authorization: Bearer <token>" https://<your-api>/api/system/license`.
-</Warning>
+  <Accordion title='"BreachLens: license required" toast'>
+    The server-side license check failed. Your BreachLens admin needs to set `LICENSE_PUBLIC_KEY` and `LICENSE_KEY` in the deployment environment and restart. Verify with `curl -sf -H "Authorization: Bearer <token>" https://<your-api>/api/system/license`.
+  </Accordion>
 
-<Warning>
-  **Tree view populated but no squigglies in the editor.** The squigglies render only on files whose path matches what BreachLens scanned. If your local checkout has different relative paths (monorepo subdir mounted as workspace root, intermediate dirs missing), re-map the workspace folder via **Select BreachLens repo for current workspace folder**, or compare `Finding.filePath` in the drawer against your local layout.
-</Warning>
+  <Accordion title="Tree view populated but no squigglies in the editor">
+    The squigglies render only on files whose path matches what BreachLens scanned. If your local checkout has different relative paths (monorepo subdir mounted as workspace root, intermediate dirs missing), re-map the workspace folder via **Select BreachLens repo for current workspace folder**, or compare the file path shown in the finding drawer against your local layout.
+  </Accordion>
 
-<Warning>
-  **"Open in BreachLens" lands on a 404.** The server's `FRONTEND_URL` is misconfigured (pointing at the API URL, or a hostname that does not resolve). Your admin needs to set it to the web UI origin and restart the api.
-</Warning>
+  <Accordion title='"Open in BreachLens" lands on a 404'>
+    The server's `FRONTEND_URL` is misconfigured (pointing at the API URL, or a hostname that does not resolve). Your admin needs to set it to the web UI origin and restart the deployment.
+  </Accordion>
 
-<Warning>
-  **Apply fix returns 403.** Your API token is missing the `findings:write` scope. Mint a new token with the scope - the current UI requires revoke and remint rather than in-place scope edits.
-</Warning>
+  <Accordion title="Apply fix returns 403">
+    Your API token is missing the `findings:write` scope. Mint a new token with the scope — the current UI requires revoke and remint rather than in-place scope edits.
+  </Accordion>
+</AccordionGroup>
 
 ## Next steps
 
@@ -180,6 +180,6 @@ The extension uses only the public VS Code extension API, so it sideloads cleanl
     SSO, passkeys, multi-IdP per org. How operators sign in.
   </Card>
   <Card title="Need help?" icon="envelope" href="mailto:sales@breachlens.app">
-    Email [sales@breachlens.app](mailto:sales@breachlens.app) for setup help, signed `.vsix` re-issues, or a Slack onboarding channel.
+    Email us for setup help, signed `.vsix` re-issues, or a Slack onboarding channel.
   </Card>
 </CardGroup>

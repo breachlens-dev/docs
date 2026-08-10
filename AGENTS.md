@@ -37,6 +37,13 @@ no written standard. Read this before editing.
   them to open a firewall or enroll something (e.g. the runtime sensor-manager
   port `1514`) — the same trust-boundary exception as above. Naming the port is
   fine; naming the engine behind it is not.
+- **No internal model/field names in prose either.** `Repository.url`,
+  `Finding.filePath`, `SsoConfig.allowedEmailDomains` — a PascalCase entity plus a
+  dotted property IS the ORM schema, and it slips past tool-name sweeps because it
+  carries no product name. It also buys the reader nothing (the REST API returns
+  `filePath`, not `Finding.filePath`). Say it in reader vocabulary — "the file path
+  shown in the finding drawer", "the SSO config's allowed email domains". A field
+  name is fine inside a config **table's own column**, never in running prose.
 - **No fabricated evidence** — no invented metrics, logos, testimonials, counts.
   If a capability is partial or roadmap, say so.
 - **Air-gap claims stay honest** — data residency is true; a *fully disconnected*
