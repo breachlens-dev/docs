@@ -169,6 +169,14 @@ For the trace to appear, three things line up:
 
 **Find them fast.** Domain findings that trace to source carry a **Source fix** badge in the findings list, and the **Source fix** filter isolates them in one click — so you can work the runtime findings that already have a code fix waiting.
 
+## Fix a config finding
+
+Some domain findings never map to a line of source — missing security headers, cookie flags, CORS, HSTS/CSP live in **configuration**, not a file a scanner flags, so **Fix at source** stays empty for them. For that whole class, open the finding and BreachLens shows a **deterministic config fix**: the exact header or setting to add, and where it belongs. It's template-based, not AI-generated, so it's reproducible and never points at the wrong file.
+
+<Note>
+  Link the domain to its source repository (under the same Application) and BreachLens detects the app's stack and tailors the snippet — an nginx `add_header`, an Apache `mod_headers` rule, an Express `helmet()` call, a Django setting. Without that link you still get the correct header name and value to apply wherever your app terminates HTTP.
+</Note>
+
 ## Next steps
 
 <CardGroup cols={2}>
