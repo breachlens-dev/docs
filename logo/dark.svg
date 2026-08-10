@@ -6,5 +6,5 @@
     </g>
     <circle cx="538" cy="498" r="75" fill="#ffffff"/>
   </svg>
-  <text x="32" y="20" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, Inter, Arial, sans-serif" font-size="17" font-weight="700" fill="#ffffff" letter-spacing="-0.4">BreachLens</text>
+  <text x="32" y="20" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, Inter, Arial, sans-serif" font-size="17" font-weight="600" fill="#ffffff" letter-spacing="-0.17">BreachLens</text>
 </svg>
