@@ -46,7 +46,7 @@ Private images need pull credentials, supplied when you **connect the registry**
     Click **Run scan**. BreachLens pulls the image server-side and reports CVEs across OS packages and language dependencies, each tiered by reachability.
   </Step>
   <Step title="Triage patch-first">
-    Sort by reachability + severity — a Critical CVE in a function your image actually calls beats a Critical in a package that's present but never loaded.
+    Sort by reachability + severity — a Critical CVE in code your image actually loads beats a Critical in a package that's present but never used.
   </Step>
 </Steps>
 
