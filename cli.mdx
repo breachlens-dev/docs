@@ -165,23 +165,8 @@ npx @breachlens/cli scan --repo my-org/my-service --severity-gate none
 ```
 </CodeGroup>
 
----
-
-## Licensing
-
-BreachLens unlocks its premium tier with a signed license key that BreachLens issues to
-you — you apply the key to your deployment, you don't generate it yourself.
-
-**Apply a license:** open **Settings → Operations → License → Apply license**, or set
-`LICENSE_KEY` in the deployment environment and restart. The key is verified **fully offline**
-using a locally-configured ed25519 public key — no call to BreachLens infrastructure, so
-it works in air-gapped installs.
-
 <Note>
-  The license gates premium features only — it does **not** stop the platform from
-  running. With a missing or invalid key the API still boots and serves normally, and
-  core scanning stays fully available; the premium features (auto-fix PRs, cloud posture,
-  aggressive pentest, AI attack-path summaries, and reachability) return **HTTP 402**
-  until a valid key is applied. The license banner in the API logs reports the current
-  mode.
+  Applying a license and the full runtime-enforcement behavior live on the
+  [Self-hosting & air-gap](/deployment/self-hosting#licensing) page — the scan CLI itself
+  needs no license to run.
 </Note>
