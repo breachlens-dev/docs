@@ -54,11 +54,13 @@ pre code,
 }
 
 /* Medium (500) for sidebar entries and table headers. The theme renders these
- * at 400; the 500 face is registered above. (Sidebar ID can vary by theme
- * version — re-check the live DOM if the weight doesn't take.) */
+ * at 400; the 500 face is registered above. !important for the same reason the
+ * font-family rule needs it — to beat the theme's framework CSS on the same
+ * selectors. (Sidebar ID can vary by theme version — re-check the live DOM if
+ * the weight doesn't take.) */
 #sidebar-content a,
 th {
-  font-weight: 500;
+  font-weight: 500 !important;
 }
 
 /* Long code blocks scroll horizontally inside their own box on narrow screens
