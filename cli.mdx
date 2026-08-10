@@ -120,20 +120,20 @@ Pass **exactly one**:
 
 ## Options
 
-| Flag | Env | Default | Meaning |
-|---|---|---|---|
-| `--api-url` | `BREACHLENS_API_URL` | — | BreachLens base URL (required) |
-| `--token` | `BREACHLENS_API_TOKEN` | — | Scoped `blt_` token (required) |
-| `--cf-access-client-id` | `CF_ACCESS_CLIENT_ID` | — | Cloudflare Access service-token id (only if CF-Access-fronted) |
-| `--cf-access-client-secret` | `CF_ACCESS_CLIENT_SECRET` | — | Cloudflare Access service-token secret |
-| `--repo` | — | — | `owner/name` — auto-onboard + scan |
-| `--repo-id` / `--container-id` / `--domain-id` | — | — | Explicit BreachLens resource id |
-| `--scan-types` | — | server default | csv, e.g. `SAST,SCA,SECRET,IAC` |
-| `--severity-gate` | — | `none` | `CRITICAL` \| `HIGH` \| `MEDIUM` \| `LOW` \| `INFO` \| `none` |
-| `--commit` / `--branch` / `--pr` | — | — | CI context passed to auto-discovery |
-| `--sarif-out` | — | `breachlens-<id>.sarif` | Where to write the SARIF |
-| `--poll-interval` | — | `15` | Status poll interval (seconds) |
-| `--timeout` | — | `45` | Hard timeout (minutes) |
+| Flag (env var) | Default | Meaning |
+|---|---|---|
+| `--api-url`<br/>`BREACHLENS_API_URL` | — | BreachLens base URL (required) |
+| `--token`<br/>`BREACHLENS_API_TOKEN` | — | Scoped `blt_` token (required) |
+| `--cf-access-client-id`<br/>`CF_ACCESS_CLIENT_ID` | — | Cloudflare Access service-token id (only if CF-Access-fronted) |
+| `--cf-access-client-secret`<br/>`CF_ACCESS_CLIENT_SECRET` | — | Cloudflare Access service-token secret |
+| `--repo` | — | `owner/name` — auto-onboard + scan |
+| `--repo-id` / `--container-id` / `--domain-id` | — | Explicit BreachLens resource id |
+| `--scan-types` | server default | csv, e.g. `SAST,SCA,SECRET,IAC` |
+| `--severity-gate` | `none` | `CRITICAL` \| `HIGH` \| `MEDIUM` \| `LOW` \| `INFO` \| `none` |
+| `--commit` / `--branch` / `--pr` | — | CI context passed to auto-discovery |
+| `--sarif-out` | `breachlens-<id>.sarif` | Where to write the SARIF |
+| `--poll-interval` | `15` | Status poll interval (seconds) |
+| `--timeout` | `45` | Hard timeout (minutes) |
 
 ## Exit codes
 

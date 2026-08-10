@@ -5,8 +5,12 @@
   "description": "Self-hosted DevSecOps — 9 scanner tiers, multi-AI auto-fix, cross-tier attack-path correlation, air-gappable for federal.",
   "colors": {
     "primary": "#1D4ED8",
-    "light": "#3B82F6",
+    "light": "#2563EB",
     "dark": "#1E40AF"
+  },
+  "fonts": {
+    "heading": { "family": "Geist", "weight": 600, "source": "/fonts/geist-latin-600-normal.woff2", "format": "woff2" },
+    "body": { "family": "Geist", "weight": 400, "source": "/fonts/geist-latin-400-normal.woff2", "format": "woff2" }
   },
   "favicon": "/favicon.svg",
   "navigation": {
