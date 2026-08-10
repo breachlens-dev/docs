@@ -52,3 +52,18 @@ pre code,
 .prose pre {
   font-family: "Geist Mono", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace !important;
 }
+
+/* Medium (500) for sidebar entries and table headers. The theme renders these
+ * at 400; the 500 face is registered above. (Sidebar ID can vary by theme
+ * version — re-check the live DOM if the weight doesn't take.) */
+#sidebar-content a,
+th {
+  font-weight: 500;
+}
+
+/* Long code blocks scroll horizontally inside their own box on narrow screens
+ * instead of overflowing (the page never widens; the block does). */
+pre {
+  max-width: 100%;
+  overflow-x: auto;
+}

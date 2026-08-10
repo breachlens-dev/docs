@@ -8,6 +8,10 @@
     "light": "#2563EB",
     "dark": "#1E40AF"
   },
+  "appearance": {
+    "default": "system",
+    "strict": false
+  },
   "fonts": {
     "heading": { "family": "Geist", "weight": 600, "source": "/fonts/geist-latin-600-normal.woff2", "format": "woff2" },
     "body": { "family": "Geist", "weight": 400, "source": "/fonts/geist-latin-400-normal.woff2", "format": "woff2" }
