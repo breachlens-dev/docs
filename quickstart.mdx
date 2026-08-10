@@ -40,11 +40,11 @@ Before you begin, you must have:
 
     ```bash
     cp .env.example .env
-    echo "LICENSE_JWT=eyJhbGciOiJSUzI1NiIs..." >> .env
+    echo "LICENSE_KEY=eyJhbGciOiJFZERTQSIs..." >> .env
     ```
 
     <Note>
-      The license is verified at api startup. Tampering with it (or running without one) prevents the api from booting. See [License enforcement](/security/license) for the runtime check.
+      The license is verified at api startup — locally, with no phone-home. Without a valid license the platform still boots and core scanning stays available; the premium features are disabled (they return HTTP 402) until you apply one. See [Licensing](/deployment/self-hosting#licensing) for the details.
     </Note>
   </Step>
 
@@ -141,13 +141,13 @@ Before you begin, you must have:
   <Card title="Add a domain target" icon="globe" href="/scanning/domains">
     Run DAST + autonomous pentest against a live web app. Capture proof-of-exploit videos.
   </Card>
-  <Card title="Configure SSO" icon="key" href="/auth/sso">
+  <Card title="Configure SSO" icon="key" href="/auth">
     Wire Microsoft Entra ID, Okta, Auth0, Google Workspace, or Keycloak. Multi-IdP per org supported.
   </Card>
-  <Card title="Bring your own AI" icon="sparkles" href="/ai/providers">
+  <Card title="Bring your own AI" icon="sparkles" href="/ai-providers">
     Plug Anthropic, OpenAI, Gemini, or Ollama for auto-fix and finding summarization.
   </Card>
-  <Card title="Air-gap installation" icon="shield-halved" href="/deployment/airgap">
+  <Card title="Air-gap installation" icon="shield-halved" href="/deployment/self-hosting#air-gapped-install">
     Deploy in a disconnected network. Your code, findings, and AI inference stay in your network; provision offline mirrors for the scanner rules and vulnerability data.
   </Card>
 </CardGroup>

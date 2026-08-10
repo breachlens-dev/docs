@@ -1,0 +1,88 @@
+---
+title: "Self-hosting & air-gap"
+description: "How BreachLens runs entirely inside your own network — the trust boundary, licensing, and what a fully disconnected deployment requires. Written for operators and procurement reviewers."
+---
+
+BreachLens is built to run inside your perimeter. You host it, you hold the license, and your source code, findings, evidence, and AI inference stay on infrastructure you control. This page is the deployment story for a security-mature or regulated buyer: which ports are exposed, where the trust boundary sits, how licensing behaves at runtime, and exactly what a fully disconnected install still needs from an operator.
+
+## Ports and trust boundary
+
+A BreachLens deployment exposes **two operator-facing ports**:
+
+- **`5173`** — the web UI.
+- **`3000`** — the API.
+
+Everything else BreachLens runs — its application services and all scan processing — stays inside the deployment and is never exposed on its own port. Users and CI reach BreachLens through those two ports only.
+
+Your data stays where you put it. Code pulled for scanning, the findings and proof-of-exploit evidence produced from it, and any AI inference over that data all remain inside your network. The only things that *can* reach outside — and only if you let them — are these:
+
+| What | Does it leave your network? |
+|---|---|
+| The web UI, the API, and all scan processing | **No.** Fully in-network. |
+| License verification | **No.** Verified locally, offline (see [Licensing](#licensing)). |
+| AI inference | **Your choice.** A local model keeps every prompt in-network; if you point AI at an external provider, that provider is the only egress. See [AI providers](/ai-providers). |
+| Scanner rule feeds & vulnerability data | **Optional.** They refresh from upstream sources over the internet by default, or you host offline mirrors internally (see [Air-gapped install](#air-gapped-install)). |
+
+<Note>
+  In a locked-down deployment, **nothing must egress.** Point AI at a local model and mirror the scanner data internally, and BreachLens runs with no outbound network access at all.
+</Note>
+
+## Licensing
+
+Apply your license in one of two ways:
+
+- **In the product** — go to **Settings → Operations → License** and paste the license JWT.
+- **By environment** — set `LICENSE_KEY` in the deployment environment and restart the platform.
+
+### Offline verification, no call home
+
+The license is verified **locally** using a locally-configured ed25519 (EdDSA) public key. There is no phone-home, no outbound request, and no online revocation check — verification works identically on a fully disconnected network. This is what preserves the air-gap posture.
+
+### Runtime behavior — accurate expectations
+
+A missing, expired, or tampered license **does not stop the platform from starting**, and it does not block core scanning. When the license is absent or invalid, BreachLens boots in an unlicensed evaluation mode, logs a warning in the startup banner, and keeps serving the full open-grade scanning experience.
+
+Licensing is enforced at the **feature level, not the boot level.** Five premium capabilities require a valid license:
+
+- Auto-fix pull requests
+- Cloud posture (CSPM)
+- Aggressive autonomous pentest
+- AI attack-path summaries
+- Reachability analysis
+
+A request to one of these capabilities without a valid license returns **HTTP 402**; everything else continues to work. This is deliberate — a license blip should never take your security platform offline.
+
+## Air-gapped install
+
+Data residency is real: run BreachLens on a disconnected network and your code, findings, evidence, and (with a local model) AI inference never leave it.
+
+A **fully disconnected** deployment additionally needs operator-provisioned offline resources — this is not "air-gapped out of the box":
+
+- **Scanner rule feeds and vulnerability data.** In a connected install these refresh from upstream sources automatically. Disconnected, you host offline mirrors inside your network and point the platform at them. Keeping those mirrors current is then an operator responsibility — stale vulnerability data means missed findings.
+- **AI, if you use it.** Point BreachLens at a local or self-hosted model so prompts stay in-network. See [AI providers](/ai-providers). AI is additive — the platform's rule- and tool-based detection runs without it.
+- **License.** Verifies offline with the local key — no provisioning needed (see [Licensing](#licensing)).
+
+<Note>
+  **User onboarding works with no egress.** Invitations generate a one-shot link that the inviting admin shares over any out-of-band channel — there is no dependency on an outbound mail relay. See [Authentication](/auth) for invitation and break-glass details.
+</Note>
+
+<Warning>
+  Never treat a default install as fully air-gapped. Data residency holds, but until you provision internal mirrors for scanner rules and vulnerability data, a disconnected deployment will run with whatever data shipped in the bundle — increasingly stale over time. Confirm your offline-mirror configuration before relying on a hard no-egress guarantee.
+</Warning>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Stand up BreachLens and run your first scan.
+  </Card>
+  <Card title="Authentication" icon="lock" href="/auth">
+    Closed-by-default sign-in, SSO, offline invitations, and break-glass recovery.
+  </Card>
+  <Card title="Bring your own AI" icon="sparkles" href="/ai-providers">
+    Run inference on a local or sovereign model so prompts stay in your network.
+  </Card>
+  <Card title="Scan a Kubernetes cluster" icon="server" href="/scanning/kubernetes">
+    Add cluster posture scanning to your self-hosted deployment.
+  </Card>
+</CardGroup>

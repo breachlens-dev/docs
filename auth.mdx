@@ -56,7 +56,7 @@ Controls who can become a BreachLens user when their email isn't already in the 
     **Default for self-hosted.** A new sign-in is admitted only when a pending invitation matches the email or GitHub username.
   </Card>
   <Card title="domain-allowlist" icon="users">
-    Invitations work, and additionally a fresh SSO sign-in is admitted when the email domain matches `SsoConfig.allowedEmailDomains` or `Organization.primaryEmailDomain`. Auto-joins to the matched org with the appropriate default role.
+    Invitations work, and additionally a fresh SSO sign-in is admitted when the email domain matches the SSO config's `allowedEmailDomains` or the organization's primary email domain. Auto-joins to the matched org with the appropriate default role.
   </Card>
   <Card title="open" icon="globe">
     Reserved for the future BreachLens-hosted SaaS path. Any new sign-in creates a fresh PERSONAL org with OWNER role. **Do not enable on a self-hosted install** unless you understand the implications.
@@ -154,21 +154,16 @@ The break-glass admin should sign in **only via local password + MFA**, never vi
 
 Two ways to keep the break-glass intact:
 
-1. Create the break-glass admin with an email that **does not match any SsoConfig domain**. For example, `admin@your-company.internal` while SSO covers `your-company.com`.
+1. Create the break-glass admin with an email that **does not match any configured SSO domain**. For example, `admin@your-company.internal` while SSO covers `your-company.com`.
 2. Always use the email + password form on `/login` for the break-glass admin — never the "Sign in with SSO" path — even if their email matches.
 
-### Recovery via CLI
+### Recovery if the break-glass admin loses MFA
 
-If the break-glass admin loses their MFA factor, an operator with shell access to the api pod can reset it:
+For an ordinary member who is locked out, any Organization Owner can reset that member's MFA from the product: go to **Settings → Members**, open the member's row actions, and choose **Reset MFA**. The member's existing TOTP and passkeys are cleared and they are prompted to re-enroll a second factor on their next sign-in.
 
-```bash
-# -n is the namespace you deployed BreachLens into (adjust to match your install)
-kubectl exec -n <namespace> deployment/api -- \
-  node --import tsx /app/apps/api/src/cli/break-glass-mfa-reset.ts \
-  break-glass@your-company.internal
-```
+The break-glass admin is a special case. The in-product reset deliberately refuses to reset your *own* MFA (and the break-glass admin is usually the only Owner), so it cannot self-recover the last Owner. For this case, an operator with cluster or host access to your deployment runs the break-glass MFA-reset maintenance command inside the API service. It requires the operator's identity and a reason, and writes a HIGH-severity audit record. The exact command is provided in your operator runbook, or available from BreachLens support.
 
-The reset is recorded in the audit log at HIGH severity. On the next login, the break-glass admin is redirected to `/account/mfa/enroll` to set up a new factor.
+Either way, the reset is recorded in the audit log at HIGH severity. On the next login, the affected admin is redirected to `/account/mfa/enroll` to set up a new factor.
 
 ## Audit log surface for procurement
 
