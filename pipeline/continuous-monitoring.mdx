@@ -105,7 +105,7 @@ Every scan in a target's **Scans** tab has a **⇆ Diff** button. It compares a 
 Code and config are scanned; the running system is **watched**. BreachLens's runtime tier streams events continuously rather than on a cadence:
 
 - **Runtime sensors** — host + workload agents emit syscall, file-integrity, command-exec, network, and vulnerability events into the same correlation graph.
-- **Egress verification** *(roadmap)* — aggregating network flow + TLS events into a "what did this actually talk to" record; in development, not yet shipped.
+- **Egress verification** *(roadmap)* — a "what did this actually talk to" record built from network + TLS events; [in development](/pipeline/runtime#egress-verification), not yet shipped.
 
 These feed the same engine as every scan tier, so a runtime alert on a workload can chain to the code finding and cloud misconfiguration behind it as one scored attack path.
 
@@ -140,3 +140,14 @@ Continuous monitoring is only useful if the right person hears about it. BreachL
     Wire Slack / Teams / Jira so a new confirmed finding or posture regression reaches an owner — not just a dashboard nobody's watching.
   </Step>
 </Steps>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Set up runtime sensors" icon="server" href="/pipeline/runtime">
+    Deploy always-on host and workload sensors that stream live behavior into the same correlation graph.
+  </Card>
+  <Card title="Audit GitHub posture" icon="shield-halved" href="/scanning/github-posture">
+    Schedule the posture check that catches branch-protection and org-policy drift.
+  </Card>
+</CardGroup>

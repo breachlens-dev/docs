@@ -9,8 +9,9 @@ no written standard. Read this before editing.
 
 - Mintlify site; pages are MDX with YAML frontmatter; config in `docs.json`.
 - Brand type: **Geist** (body/headings), self-hosted in `/fonts/` and declared
-  via `docs.json` `fonts`. (Mintlify has no code-font key, so the mono face is
-  the theme default until we add custom CSS.) Primary blue `#1D4ED8`;
+  via `docs.json` `fonts` (body 400, heading 600). Mintlify has no code-font key,
+  so **Geist Mono** (400/500) plus the Geist 500 weight are self-hosted in
+  `/fonts/` and applied via the auto-loaded root `style.css`. Primary blue `#1D4ED8`;
   `colors.light` must stay AA on white (`#2563EB`, not `#3B82F6`). No
   teal/amber/rose; red = errors/danger only.
 - Audience is two-sided: an **operator** getting to a first scan, and a
@@ -26,6 +27,16 @@ no written standard. Read this before editing.
   wrong rationalization — operators need the trust boundary and the ports, not
   the engine list. Before publishing ANY page, grep the draft for tool/stack
   names. (An architecture page was published and reverted for this in Aug 2026.)
+- **Trust-relationship / identity diagrams are the welcome exception.** A
+  corporate-IdP→app or org→IdP-routing diagram names only the customer's own
+  IdPs and code hosts, carries no stack, and is exactly what a procurement
+  reviewer wants — keep these. The ban is on **infrastructure topology** (our
+  services, ports-as-wiring, data stores, queues), in any format.
+- **Operator-necessity carve-out (ports & enrollment).** A component's listening
+  port, address, and enrollment field ARE publishable when an operator must know
+  them to open a firewall or enroll something (e.g. the runtime sensor-manager
+  port `1514`) — the same trust-boundary exception as above. Naming the port is
+  fine; naming the engine behind it is not.
 - **No fabricated evidence** — no invented metrics, logos, testimonials, counts.
   If a capability is partial or roadmap, say so.
 - **Air-gap claims stay honest** — data residency is true; a *fully disconnected*
@@ -54,6 +65,8 @@ no written standard. Read this before editing.
 - **Tables** are top-level blocks — never nest a pipe table inside a list item.
   Keep tables narrow (fold secondary columns into the primary cell with `<br/>`)
   so the meaning column isn't the first thing pushed off-screen on mobile.
-- **Diagrams:** prefer ```mermaid over ASCII box-art (ASCII can't reflow and
-  overflows at 375px). Keep code blocks under ~70 chars wide.
+- **Diagrams:** only trust/identity diagrams are publishable (see content
+  boundary) — never infrastructure topology. For those, prefer ```mermaid over
+  ASCII box-art (ASCII can't reflow and overflows at 375px). Keep code blocks
+  under ~70 chars wide.
 - Every page ends with a **"Next steps"** `<CardGroup cols={2}>`.

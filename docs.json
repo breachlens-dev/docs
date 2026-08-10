@@ -13,6 +13,12 @@
     "body": { "family": "Geist", "weight": 400, "source": "/fonts/geist-latin-400-normal.woff2", "format": "woff2" }
   },
   "favicon": "/favicon.svg",
+  "redirects": [
+    { "source": "/deployment/airgap", "destination": "/deployment/self-hosting#air-gapped-install" },
+    { "source": "/security/license", "destination": "/deployment/self-hosting#licensing" },
+    { "source": "/auth/sso", "destination": "/auth" },
+    { "source": "/ai/providers", "destination": "/ai-providers" }
+  ],
   "navigation": {
     "pages": [
       {
@@ -27,6 +33,12 @@
         "pages": [
           "auth",
           "ai-providers"
+        ]
+      },
+      {
+        "group": "Deployment",
+        "pages": [
+          "deployment/self-hosting"
         ]
       },
       {

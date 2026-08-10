@@ -1,0 +1,54 @@
+/*
+ * BreachLens docs — self-hosted type system.
+ *
+ * docs.json `fonts` declares Geist for body (400) and headings (600).
+ * Mintlify has no code-font key and does not register intermediate weights,
+ * so this auto-loaded stylesheet fills the two gaps:
+ *   1. Geist Mono (400/500) for all code / monospace surfaces.
+ *   2. Geist 500 (medium) so sidebar entries, table headers and tab labels
+ *      use the real weight instead of a browser-synthesised one.
+ *
+ * Mintlify loads any .css in the content directory on every page — no
+ * docs.json reference needed. Font files are served from /fonts/.
+ */
+
+@font-face {
+  font-family: "Geist";
+  src: url("/fonts/geist-latin-500-normal.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Geist Mono";
+  src: url("/fonts/geist-mono-latin-400-normal.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Geist Mono";
+  src: url("/fonts/geist-mono-latin-500-normal.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  --font-code: "Geist Mono", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+}
+
+/* Apply the mono face to every code surface. !important is required to beat
+ * the theme's framework CSS (per Mintlify's own custom-CSS guidance). */
+code,
+pre,
+kbd,
+samp,
+pre code,
+.prose code,
+.prose pre {
+  font-family: "Geist Mono", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace !important;
+}

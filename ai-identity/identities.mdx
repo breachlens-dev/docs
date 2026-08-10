@@ -7,7 +7,7 @@ Most breaches move through **identity** — an over-permissioned role, a stale a
 
 ## There's nothing to onboard
 
-Identities aren't a target you add — they're **discovered from the accounts you've already connected**. Once you've connected a [cloud account](/scanning/cloud) or a [GitHub account](/scanning/repositories), BreachLens can enumerate their identities using the same read-only credentials. No new keys, no separate connector.
+Identities aren't a target you add — they're **discovered from the accounts you've already connected**. Once you've connected a [cloud account](/scanning/cloud) or a [GitHub account](/scanning/github-posture), BreachLens can enumerate their identities using the same read-only credentials. No new keys, no separate connector.
 
 Providers discovered today:
 
@@ -48,7 +48,7 @@ Each identity carries concrete recommended actions (revoke an unused key, scope 
   <Card title="Connect a cloud account" icon="cloud" href="/scanning/cloud">
     The source identities are discovered from — connect AWS / Azure / GCP read-only.
   </Card>
-  <Card title="Attack paths" icon="route" href="/pipeline/continuous-monitoring">
-    See how an over-permissioned identity chains to the code, container, or cloud finding behind it.
+  <Card title="Continuous monitoring" icon="repeat" href="/pipeline/continuous-monitoring">
+    How identity findings feed the always-on correlation graph and chain into cross-tier attack paths.
   </Card>
 </CardGroup>
