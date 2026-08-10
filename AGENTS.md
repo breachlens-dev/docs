@@ -11,9 +11,13 @@ no written standard. Read this before editing.
 - Brand type: **Geist** (body/headings), self-hosted in `/fonts/` and declared
   via `docs.json` `fonts` (body 400, heading 600). Mintlify has no code-font key,
   so **Geist Mono** (400/500) plus the Geist 500 weight are self-hosted in
-  `/fonts/` and applied via the auto-loaded root `style.css`. Primary blue `#1D4ED8`;
-  `colors.light` must stay AA on white (`#2563EB`, not `#3B82F6`). No
-  teal/amber/rose; red = errors/danger only.
+  `/fonts/` and applied via the auto-loaded root `style.css`. Primary blue
+  `#1D4ED8` (Mintlify's light-mode accent, AA on white). **Mintlify colour
+  semantics are counterintuitive, verified on the rendered site:** `colors.light`
+  is the **DARK-mode** accent (rendered on the dark background — must be AA on
+  DARK, currently `#3B82F6` ≈ 5.7:1), and `colors.dark` is the **LIGHT-mode**
+  accent (AA on white). Do NOT "fix" `colors.light` to be AA on white — that
+  makes dark-mode links fail AA. No teal/amber/rose; red = errors/danger only.
 - Audience is two-sided: an **operator** getting to a first scan, and a
   **technical buyer / procurement reviewer**. Serve one of them clearly.
 
