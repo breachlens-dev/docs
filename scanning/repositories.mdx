@@ -98,9 +98,9 @@ With the App's **Checks** and **Pull requests** permissions granted, BreachLens 
 
 Open **Findings**, then filter by **Severity: Critical, High** and **Has attack path: yes** — that narrows a raw finding count down to what a real attacker could chain. Click any row to open the detail drawer: AI-suggested fix, reachability tier, attack-path context, and **Generate auto-fix PR**.
 
-<Note>
-  **Dependency (SCA) findings get a deterministic fix — no AI.** When a vulnerable package has a fixed release, BreachLens opens a PR that bumps its version in your manifest: `package.json`, `composer.json`, `requirements*.txt`, or `go.mod`. Scanners usually report the **lockfile** (`package-lock.json`, `composer.lock`, `go.sum`), so the fix targets the sibling manifest that generates it, and the PR is labelled manifest-only — regenerate your lockfile after merging so the resolved version updates. A package that isn't declared directly in the manifest (pulled in transitively by another package) can't be bumped this way; the drawer tells you when that's the case rather than opening a PR that wouldn't help.
-</Note>
+### How dependency (SCA) fixes work
+
+Dependency findings get a **deterministic** fix — no AI. When a vulnerable package has a fixed release, BreachLens opens a PR that bumps its version in your manifest: `package.json`, `composer.json`, `requirements*.txt`, or `go.mod`. Scanners usually report the **lockfile** (`package-lock.json`, `composer.lock`, `go.sum`), so the fix targets the sibling manifest that generates it, and the PR is labelled manifest-only — regenerate your lockfile after merging so the resolved version updates. A package that isn't declared directly in the manifest (pulled in transitively by another package) can't be bumped this way; the drawer tells you when that's the case rather than opening a PR that wouldn't help.
 
 ## Next steps
 
