@@ -2,10 +2,10 @@
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
   "name": "BreachLens",
-  "description": "Self-hosted application security — 9 scanner tiers, multi-AI auto-fix, and cross-tier attack-path correlation, all inside your own network.",
+  "description": "Self-hosted DevSecOps — 9 scanner tiers, multi-AI auto-fix, cross-tier attack-path correlation, air-gappable for federal.",
   "colors": {
     "primary": "#1D4ED8",
-    "light": "#2563EB",
+    "light": "#3B82F6",
     "dark": "#1E40AF"
   },
   "favicon": "/favicon.svg",
@@ -19,15 +19,10 @@
         ]
       },
       {
-        "group": "Deployment",
+        "group": "Platform",
         "pages": [
-          "deployment/architecture",
-          "deployment/air-gap",
-          "deployment/licensing",
-          "deployment/operations",
-          "deployment/auth",
-          "deployment/identity-architecture",
-          "deployment/break-glass"
+          "auth",
+          "ai-providers"
         ]
       },
       {
@@ -44,7 +39,6 @@
       {
         "group": "AI & identity",
         "pages": [
-          "ai-providers",
           "ai-identity/identities",
           "ai-identity/ai-agents",
           "ai-identity/mcp-servers"
@@ -68,12 +62,12 @@
         "group": "Reference",
         "pages": [
           "cli",
-          "api",
-          "mcp"
+          "mcp",
+          "api"
         ]
       },
       {
-        "group": "API playground (scans)",
+        "group": "API playground",
         "openapi": "api-reference/openapi.json"
       }
     ],
@@ -87,13 +81,6 @@
       ]
     }
   },
-  "redirects": [
-    { "source": "/auth", "destination": "/deployment/auth" },
-    { "source": "/auth/sso", "destination": "/deployment/auth" },
-    { "source": "/ai/providers", "destination": "/ai-providers" },
-    { "source": "/deployment/airgap", "destination": "/deployment/air-gap" },
-    { "source": "/security/license", "destination": "/deployment/licensing" }
-  ],
   "logo": {
     "light": "/logo/light.svg",
     "dark": "/logo/dark.svg"

@@ -1,37 +1,55 @@
-# BreachLens documentation
+# Mintlify Starter Kit
 
-The public documentation for [BreachLens](https://breachlens.app) — the
-self-hosted application-security platform that proves which findings are
-exploitable. Built with [Mintlify](https://mintlify.com).
+Use the starter kit to get your docs deployed and ready to customize.
 
-## Editing
+Click the green **Use this template** button at the top of this repo to copy the Mintlify starter kit. The starter kit contains examples with
 
-- Pages are MDX with YAML frontmatter, organised by section at the repo root
-  (`quickstart.mdx`, `deployment/`, `scanning/`, `ai-identity/`, `pipeline/`, …).
-- Navigation, theme, and redirects live in `docs.json`.
-- **Read [`AGENTS.md`](./AGENTS.md) before editing** — it holds the writing and
-  component conventions (callout semantics, `CardGroup` rules, table placement,
-  terminology) that keep pages consistent.
+- Guide pages
+- Navigation
+- Customizations
+- API reference pages
+- Use of popular components
 
-## Preview locally
+**[Follow the full quickstart guide](https://starter.mintlify.com/quickstart)**
+
+## AI-assisted writing
+
+Set up your AI coding tool to work with Mintlify:
 
 ```bash
+npx skills add https://mintlify.com/docs
+```
+
+This command installs Mintlify's documentation skill for your configured AI tools like Claude Code, Cursor, Windsurf, and others. The skill includes component reference, writing standards, and workflow guidance.
+
+See the [AI tools guides](/ai-tools) for tool-specific setup.
+
+## Development
+
+Install the [Mintlify CLI](https://www.npmjs.com/package/mint) to preview your documentation changes locally. To install, use the following command:
+
+```
 npm i -g mint
+```
+
+Run the following command at the root of your documentation, where your `docs.json` is located:
+
+```
 mint dev
 ```
 
-Opens at `http://localhost:3000`. Run it from the repo root, where `docs.json` lives.
+View your local preview at `http://localhost:3000`.
 
-## Check links before pushing
+## Publishing changes
 
-```bash
-mint broken-links
-```
+Install our GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app) to propagate changes from your repo to your deployment. Changes are deployed to production automatically after pushing to the default branch.
 
-Run this before every PR — it catches internal links that point at routes that
-don't exist (the most common docs regression).
+## Need help?
 
-## Publishing
+### Troubleshooting
 
-Pushes to `main` deploy to production automatically via the Mintlify GitHub app.
-Open a PR for review; merging to `main` ships it.
+- If your dev environment isn't running: Run `mint update` to ensure you have the most recent version of the CLI.
+- If a page loads as a 404: Make sure you are running in a folder with a valid `docs.json`.
+
+### Resources
+- [Mintlify documentation](https://mintlify.com/docs)

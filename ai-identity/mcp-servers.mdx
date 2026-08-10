@@ -10,24 +10,18 @@ Model Context Protocol (MCP) servers hand tools to AI agents — and a malicious
 Open **MCP Servers → Add server** and describe how to reach it:
 
 - `Name` · `Description` (optional)
-- `Transport` — how the server speaks (endpoint value depends on the transport):
-
-| Transport | Endpoint value |
-|---|---|
-| **STDIO** | the process command to launch a local server, e.g. `npx -y @modelcontextprotocol/server-filesystem /workspace` |
-| **HTTP** | the base server URL (JSON-RPC over HTTP) |
-| **SSE** | the server's `/sse` URL (Server-Sent Events) |
-| **WebSocket** | a `ws://` or `wss://` URL (full-duplex) |
-
+- `Transport` — how the server speaks:
+  | Transport | Endpoint value |
+  |---|---|
+  | **STDIO** | the process command to launch (a local server) |
+  | **HTTP** | the server URL |
+  | **SSE** | the server URL |
+  | **WebSocket** | a `wss://` URL |
 - `Endpoint` — the command or URL for the chosen transport.
 - Optionally link it to an Application, Repository, or Container for cross-tier context.
 
 <Note>
   **Authenticated remote servers are coming.** Today you can point BreachLens at a local (STDIO) server or an unauthenticated HTTP / SSE / WebSocket endpoint; per-server bearer-token auth isn't configurable yet. If you need to test a token-protected MCP server, [tell us](mailto:sales@breachlens.app?subject=BreachLens%20MCP%20auth).
-</Note>
-
-<Note>
-  Creating an MCP server target requires the `SECURITY` role or higher. Triggering a scan requires `DEVELOPER` or higher.
 </Note>
 
 ## Run a scan
@@ -40,47 +34,13 @@ Open **MCP Servers → Add server** and describe how to reach it:
     Click **Run scan**. BreachLens opens the transport, completes the MCP handshake, enumerates the exposed tools, and runs the probe suite against them. If the handshake fails, you get a clear connectivity finding instead of a silent miss.
   </Step>
   <Step title="Review findings">
-    Each probe can emit zero, one, or more findings, each classified by its BreachLens MCP threat class. Filter the **Findings** list by `scanType = MCP_SERVER` to see only MCP results — each carries the usual evidence panel, severity, confidence, and AI summary. Cross-tier correlation treats an MCP server as a first-class asset, so a finding can link to the application, repository, or container that uses it.
+    Each probe can emit zero, one, or more findings, each classified by its BreachLens MCP threat class.
   </Step>
 </Steps>
 
-## What gets probed
-
-BreachLens runs ten probes per scan: five fast deterministic heuristic checks, four LLM-judged checks that call your configured AI provider for nuanced verdicts, and one pure-Python synthesis probe that chains the prior nine into multi-vector attack paths.
-
-<CardGroup cols={2}>
-  <Card title="Heuristic probes" icon="shield-check">
-    Five deterministic checks that need no AI roundtrip.
-
-    - **Excessive permission** — tools that grant unrestricted FS, shell, or network access.
-    - **Tool shadowing** — canonical names (`search`, `read_file`) that could intercept a trusted tool.
-    - **Token theft** — response shapes that leak env vars, cloud keys, or SSH credentials.
-    - **Malicious code execution** — tools that actually `eval` the canary payload BreachLens injects.
-    - **Remote access** — tools advertising SMTP, reverse-shell, or arbitrary outbound fetch.
-  </Card>
-  <Card title="LLM-judged probes" icon="sparkles">
-    Four probes that use your configured AI provider to judge intent.
-
-    - **Prompt injection** — direct injection payloads sent through tool arguments.
-    - **Tool poisoning** — covert directives hidden in tool descriptions (incl. zero-width and base64).
-    - **Rug-pull** — mutable version tags or description tampering between scans.
-    - **Indirect injection** — injected content delivered through `resources/read`.
-  </Card>
-</CardGroup>
-
-A tenth probe, **multi-vector**, runs after the nine above. It is pure-Python synthesis over the findings produced so far, correlating pairs like prompt-injection + malicious-code-execution into chain-grade `CONFIRMED` findings without an extra AI roundtrip.
-
 <Note>
-  The LLM-judged probes reuse the same judge model as [AI-agent scans](/ai-identity/ai-agents). With no AI provider configured they simply skip; the five heuristic probes still run, so a scan always produces a result. Point the judge at an internal Ollama or vLLM endpoint to keep MCP scan data inside your perimeter.
+  Some probes (prompt injection, tool poisoning, indirect injection) are **LLM-judged** — they reuse the same judge model as [AI-agent scans](/ai-identity/ai-agents). With no AI provider configured they simply skip; the heuristic probes still run, so a scan always produces a result.
 </Note>
-
-## Try it against the bundled vulnerable server
-
-BreachLens ships a deliberately-vulnerable MCP server (`apps/dvmcp/`) — the MCP equivalent of DVWA. Every tool is engineered to trip a specific probe: the `execute` tool actually `eval`s its input, `read_file` returns fake AWS credentials when asked for `/proc/self/environ`, and `helpful_helper` plants base64-encoded directives in its description. Bring it up under the `mcp-targets` Compose profile to validate your probe pipeline end-to-end without touching a production server.
-
-<Tip>
-  Want a printable evidence pack? `ADMIN` users can export an MCP fleet report or a per-server report from the detail page — both render as styled HTML and PDF.
-</Tip>
 
 ## Next steps
 
@@ -88,7 +48,7 @@ BreachLens ships a deliberately-vulnerable MCP server (`apps/dvmcp/`) — the MC
   <Card title="Red-team an AI agent" icon="robot" href="/ai-identity/ai-agents">
     Probe the agents that consume these MCP servers for prompt injection and more.
   </Card>
-  <Card title="BreachLens as an MCP server" icon="plug" href="/mcp">
-    The roadmap — expose BreachLens's own findings and scans as an MCP server for your AI agents.
+  <Card title="Fit it into your pipeline" icon="diagram-project" href="/pipeline/cicd">
+    Where AI and MCP testing sit alongside the rest of your security pipeline.
   </Card>
 </CardGroup>
