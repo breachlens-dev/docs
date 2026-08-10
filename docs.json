@@ -53,6 +53,7 @@
           "scanning/cloud",
           "scanning/containers",
           "scanning/domains",
+          "scanning/authenticated-scans",
           "scanning/kubernetes"
         ]
       },

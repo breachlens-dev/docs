@@ -1,0 +1,109 @@
+---
+title: "Authenticated scanning (OAuth2 / SSO apps)"
+description: "Scan behind login on modern SPAs protected by Entra ID, Okta, Auth0, or any OAuth2/OIDC provider — including apps that enforce MFA — using a dedicated scanner service account."
+---
+
+Most of an application's attack surface lives **behind login**. A single-page app (React/Angular/Vue) protected by an identity provider authenticates in the browser, receives an **access token (a Bearer JWT)**, and calls its backend API with `Authorization: Bearer …`. The "session" a scanner needs is that **token**, not a cookie.
+
+This guide covers the hard-but-common case: an SPA behind **Microsoft Entra ID / Entra External ID (CIAM)**, Okta, Auth0, Keycloak, or any OAuth2/OIDC provider — where the interactive login is username → password → **MFA**. You can't automate that interactive flow (a scanner can't read the MFA email/SMS), so you give BreachLens a **non-interactive way to mint tokens** instead.
+
+<Note>
+  If your app uses a plain **form login** (username + password fields) or you can hand BreachLens a token directly, you don't need this page — configure **Form login** or a **Bearer / header token** on the domain's auth config, covered in [Scan domains → Authenticated scanning](/scanning/domains#authenticated-scanning).
+</Note>
+
+## Pick your method
+
+<CardGroup cols={2}>
+  <Card title="OAuth2 service account (recommended)" icon="key">
+    A dedicated scanner account + BreachLens fetches a fresh token itself on every scan. **Repeatable and unattended** — the right choice for scheduled/recurring scans. Requires a small IdP change.
+  </Card>
+  <Card title="Recorded session (one-off)" icon="record-vinyl">
+    You log in once — MFA and all — through BreachLens's recording browser; it captures the token from the traffic. **No IdP change**, but the captured token expires (~60–90 min), so it suits a single run, not a nightly schedule.
+  </Card>
+</CardGroup>
+
+## OAuth2 service account (ROPC)
+
+BreachLens can exchange service-account credentials for a Bearer token using the OAuth2 **Resource Owner Password Credentials (ROPC)** grant, then inject that token on every request its tools make (Nuclei, SQLMap, XSStrike, and the rest). No browser, no MFA prompt, no human at 2 a.m.
+
+### 1. Prepare the identity provider
+
+<Steps>
+  <Step title="Create a dedicated scanner account">
+    Create a **local** account, e.g. `pentest-scanner@yourcompany.com`. It must be a username/password account in the tenant — ROPC does **not** work for social or federated logins. Give it a role that matches a real user so the scan exercises real per-user authorization, but keep it **least-privilege**.
+  </Step>
+  <Step title="Exempt it from MFA / Conditional Access">
+    ROPC cannot satisfy an interactive MFA challenge, so add a **Conditional Access exclusion** scoped to **only** this account (exclude the specific user, not a broad group). In Entra: **Conditional Access → your MFA policy → Assignments → Users → Exclude**.
+  </Step>
+  <Step title="Allow public-client flows">
+    On the app registration the SPA uses (or a separate "BreachLens Scanner" app registration you create for this), enable **Allow public client flows** — Entra: **App registration → Authentication → Advanced settings → Enable the following mobile and desktop flows → Yes**. This permits the ROPC token request.
+  </Step>
+</Steps>
+
+### 2. Find the values from a real login
+
+Open your app's login in a browser, start the SSO sign-in, and look at the **authorize URL** it redirects to. Everything you need is in it (these are public OAuth parameters — no secrets):
+
+```
+https://<tenant>.ciamlogin.com/<tenant-id>/oauth2/v2.0/authorize
+  ?client_id=<client-id>
+  &scope=api://<api-app-id>/access_as_user%20openid%20profile%20offline_access
+  &redirect_uri=https://app.yourcompany.com
+  &response_type=code&code_challenge=…
+```
+
+| BreachLens field | Where it comes from |
+|---|---|
+| **Token URL** | Same base as the `authorize` endpoint with `/token` instead: `https://<tenant>.ciamlogin.com/<tenant-id>/oauth2/v2.0/token` |
+| **Client ID** | The `client_id` query param |
+| **Client secret** | *Empty* — a browser SPA is a **public client** with no secret |
+| **Grant type** | `password` (ROPC) |
+| **Scope** | The `scope` param, e.g. `api://<api-app-id>/access_as_user openid profile offline_access` |
+| **Username / Password** | The scanner account you created |
+
+<Note>
+  For a standard Entra ID (workforce) tenant the authorize host is `login.microsoftonline.com/<tenant-id>/oauth2/v2.0/…` and the token endpoint follows the same pattern. Okta, Auth0, and Keycloak expose an equivalent `.../token` endpoint and a `password` grant — the field mapping is identical.
+</Note>
+
+### 3. Configure the domain
+
+On the domain in BreachLens (admin-gated), open the **auth config** and choose **OAuth2**. Enter the values above and save. Credentials are encrypted at rest (AES-256-GCM) and never returned.
+
+BreachLens requests a fresh token at the **start of every scan**, so it never runs on a stale token mid-run. Because `access_as_user` is a **delegated** scope, the token acts as your scanner *user* — the scan therefore exercises per-user authorization paths (IDOR, user-scoped endpoints), not just app-level checks.
+
+<Check>
+  Verify it worked: kick off a scan and confirm the crawl reaches post-login URLs (not just the public landing page), and that the scanner log shows an obtained Bearer token rather than 401s across the board.
+</Check>
+
+## ⚠️ Before you point it at production
+
+<Warning>
+  An **authenticated aggressive pentest mutates and can destroy data.** SQLMap, XSStrike, commix, and dalfox submit real payloads **as the logged-in user** — creating, editing, and **deleting** records, submitting forms, and triggering workflows. Against a live app with real customer data this is dangerous.
+
+  - Prefer a **staging tenant**, or scope the scanner account to a **disposable test area** with no real data.
+  - Run **DAST or Standard-depth pentest first** (mostly read-only probing); reserve **Aggressive** (the exploitation phase) for environments where data loss is acceptable.
+  - Use a **maintenance window**.
+</Warning>
+
+The MFA-exempt scanner account is itself a standing exception — treat it accordingly: least-privilege, unique strong password, **disabled when not scanning**, the Conditional Access exclusion scoped to only that account, and monitored. (It's exactly the kind of thing a pentest is meant to flag, so document it as a known, time-boxed exception.)
+
+## Running it on a schedule
+
+BreachLens doesn't yet have a built-in scheduler UI for recurring scans. Because the OAuth2 service account makes auth non-interactive, you can drive the cadence externally today with the [CLI](/cli):
+
+```bash
+breachlens scan --domain-id <domain-id> --scan-types PENTEST_FULL
+```
+
+Wrap that in a cron job, a Kubernetes CronJob, or a scheduled CI workflow to run nightly. The auth config lives on the domain, so each run authenticates itself. A first-class in-app scheduler (across every scan tier) is on the roadmap.
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Scan domains" icon="globe" href="/scanning/domains">
+    DAST, autonomous pentest, depth levels, and Proof-of-Exploit.
+  </Card>
+  <Card title="Continuous monitoring" icon="arrows-rotate" href="/pipeline/continuous-monitoring">
+    How BreachLens fits a recurring, always-on security posture.
+  </Card>
+</CardGroup>
