@@ -29,16 +29,16 @@
         ]
       },
       {
+        "group": "Deployment",
+        "pages": [
+          "deployment/self-hosting"
+        ]
+      },
+      {
         "group": "Platform",
         "pages": [
           "auth",
           "ai-providers"
-        ]
-      },
-      {
-        "group": "Deployment",
-        "pages": [
-          "deployment/self-hosting"
         ]
       },
       {
